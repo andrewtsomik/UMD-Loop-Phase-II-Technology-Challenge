@@ -1200,3 +1200,10 @@
 /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/main/CMakeFiles/install.dir
 /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/main/CMakeFiles/install/local.dir
 /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/main/CMakeFiles/install/strip.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/__idf_components.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/edit_cache.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/rebuild_cache.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/list_install_components.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/install.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/install/local.dir
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/esp-idf/components/CMakeFiles/install/strip.dir

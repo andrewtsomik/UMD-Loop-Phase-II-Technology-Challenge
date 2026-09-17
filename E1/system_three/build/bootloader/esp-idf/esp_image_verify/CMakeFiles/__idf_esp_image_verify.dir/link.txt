@@ -1,0 +1,2 @@
+xtensa-esp32-elf-gcc-ar qc libesp_image_verify.a CMakeFiles/__idf_esp_image_verify.dir/src/esp_image_format.c.obj CMakeFiles/__idf_esp_image_verify.dir/src/bootloader_sha.c.obj CMakeFiles/__idf_esp_image_verify.dir/src/bootloader_sha_flash.c.obj
+xtensa-esp32-elf-gcc-ranlib libesp_image_verify.a

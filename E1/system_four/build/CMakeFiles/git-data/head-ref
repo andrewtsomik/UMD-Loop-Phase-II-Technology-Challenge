@@ -1,1 +1,3 @@
-b6fb9b0dc2cba2712bc2d2eb9d1c24e0e114eb4b
+0000000000000000000000000000000000000000 e270775d9d9ad29316d8cdaa758b7bb19356e707 andrewtsomik <andrew.tsomik@gmail.com> 1789657555 -0400	commit (initial): Created directories and placeholder READMEs
+e270775d9d9ad29316d8cdaa758b7bb19356e707 b6fb9b0dc2cba2712bc2d2eb9d1c24e0e114eb4b andrewtsomik <andrew.tsomik@gmail.com> 1789664204 -0400	commit: Added system, header, and main files
+b6fb9b0dc2cba2712bc2d2eb9d1c24e0e114eb4b 99c2254344181e000938189bcc151b6f1ceea6c7 andrewtsomik <andrew.tsomik@gmail.com> 1789667089 -0400	commit: Added seperate systems 1-4 that have esp-idf

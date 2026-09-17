@@ -1,0 +1,2 @@
+source /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_three/build/bootloader/gdbinit/symbols
+source /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_three/build/bootloader/gdbinit/connect

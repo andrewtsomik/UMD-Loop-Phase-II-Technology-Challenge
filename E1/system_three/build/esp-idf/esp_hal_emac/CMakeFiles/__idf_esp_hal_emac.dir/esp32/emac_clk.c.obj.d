@@ -1,0 +1,19 @@
+esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/esp32/emac_clk.c.obj: \
+ /home/restops/esp/esp-idf/components/esp_hal_emac/esp32/emac_clk.c \
+ /home/restops/esp/esp-idf/components/esp_hal_emac/include/hal/emac_clk.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/lib/gcc/xtensa-esp-elf/16.1.0/include/stddef.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/stdint.h \
+ /home/restops/esp/esp-idf/components/esp_libc/platform_include/sys/cdefs.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/cdefs.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/config.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/machine/ieeefp.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/features.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/picolibc.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/machine/_default_types.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/_stdint.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/_intsup.h \
+ /home/restops/esp/esp-idf/components/soc/esp32/include/soc/soc_caps.h \
+ /home/restops/esp/esp-idf/components/soc/include/soc/soc_caps_eval.h \
+ /home/restops/esp/esp-idf/components/soc/esp32/include/soc/clk_tree_defs.h \
+ /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_three/build/config/libc/picolibc/newlib/compatibility.cdep \
+ /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_three/build/config/esp32/rev/min/full.cdep

@@ -16394,6 +16394,7 @@ LOAD esp-idf/perfmon/libperfmon.a
 LOAD esp-idf/rt/librt.a
 LOAD esp-idf/spiffs/libspiffs.a
 LOAD esp-idf/main/libmain.a
+LOAD esp-idf/components/libcomponents.a
 LOAD esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a
 LOAD esp-idf/esp_gdbstub/libesp_gdbstub.a
 LOAD esp-idf/cmock/libcmock.a

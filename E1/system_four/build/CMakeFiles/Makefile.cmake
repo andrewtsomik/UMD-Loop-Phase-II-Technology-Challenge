@@ -8,7 +8,8 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "/home/restops/UMD-Loop-Phase-II-Technology-Challenge/.git/HEAD"
-  "/home/restops/UMD-Loop-Phase-II-Technology-Challenge/.git/refs/heads/main"
+  "/home/restops/UMD-Loop-Phase-II-Technology-Challenge/.git/logs/refs/heads/main"
+  "/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/components/CMakeLists.txt"
   "/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_four/CMakeLists.txt"
   "CMakeFiles/3.28.3/CMakeASMCompiler.cmake"
   "CMakeFiles/3.28.3/CMakeCCompiler.cmake"
@@ -648,6 +649,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "esp-idf/spiffs/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/ulp/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/main/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "esp-idf/components/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
@@ -816,4 +818,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/DependInfo.cmake"
   "esp-idf/ulp/CMakeFiles/__idf_ulp.dir/DependInfo.cmake"
   "esp-idf/main/CMakeFiles/__idf_main.dir/DependInfo.cmake"
+  "esp-idf/components/CMakeFiles/__idf_components.dir/DependInfo.cmake"
   )

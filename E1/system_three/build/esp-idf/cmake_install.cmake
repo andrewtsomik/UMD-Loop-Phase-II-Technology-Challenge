@@ -777,3 +777,8 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_three/build/esp-idf/main/cmake_install.cmake")
 endif()
 
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_three/build/esp-idf/components/cmake_install.cmake")
+endif()
+

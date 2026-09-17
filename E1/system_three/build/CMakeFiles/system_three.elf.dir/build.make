@@ -199,6 +199,7 @@ system_three.elf: esp-idf/perfmon/libperfmon.a
 system_three.elf: esp-idf/rt/librt.a
 system_three.elf: esp-idf/spiffs/libspiffs.a
 system_three.elf: esp-idf/main/libmain.a
+system_three.elf: esp-idf/components/libcomponents.a
 system_three.elf: esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a
 system_three.elf: esp-idf/esp_gdbstub/libesp_gdbstub.a
 system_three.elf: esp-idf/cmock/libcmock.a

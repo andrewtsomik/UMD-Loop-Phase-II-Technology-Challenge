@@ -2293,6 +2293,19 @@ __idf_main/fast:
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/build
 .PHONY : __idf_main/fast
 
+#=============================================================================
+# Target rules for targets named __idf_components
+
+# Build rule for target.
+__idf_components: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 __idf_components
+.PHONY : __idf_components
+
+# fast build rule for target.
+__idf_components/fast:
+	$(MAKE) $(MAKESILENT) -f esp-idf/components/CMakeFiles/__idf_components.dir/build.make esp-idf/components/CMakeFiles/__idf_components.dir/build
+.PHONY : __idf_components/fast
+
 project_elf_src_esp32.obj: project_elf_src_esp32.c.obj
 .PHONY : project_elf_src_esp32.obj
 
@@ -2377,6 +2390,7 @@ help:
 	@echo "... __idf_app_update"
 	@echo "... __idf_bootloader_support"
 	@echo "... __idf_cmock"
+	@echo "... __idf_components"
 	@echo "... __idf_console"
 	@echo "... __idf_cxx"
 	@echo "... __idf_driver"

@@ -199,6 +199,7 @@ system_two.elf: esp-idf/perfmon/libperfmon.a
 system_two.elf: esp-idf/rt/librt.a
 system_two.elf: esp-idf/spiffs/libspiffs.a
 system_two.elf: esp-idf/main/libmain.a
+system_two.elf: esp-idf/components/libcomponents.a
 system_two.elf: esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a
 system_two.elf: esp-idf/esp_gdbstub/libesp_gdbstub.a
 system_two.elf: esp-idf/cmock/libcmock.a

@@ -1,0 +1,19 @@
+esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/sleep_usb.c.obj: \
+ /home/restops/esp/esp-idf/components/esp_hw_support/sleep_usb.c \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/lib/gcc/xtensa-esp-elf/16.1.0/include/stdbool.h \
+ /home/restops/esp/esp-idf/components/soc/esp32/include/soc/soc_caps.h \
+ /home/restops/esp/esp-idf/components/soc/include/soc/soc_caps_eval.h \
+ /home/restops/esp/esp-idf/components/esp_hw_support/include/esp_private/sleep_usb.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/stdint.h \
+ /home/restops/esp/esp-idf/components/esp_libc/platform_include/sys/cdefs.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/cdefs.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/config.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/machine/ieeefp.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/features.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/picolibc.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/machine/_default_types.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/lib/gcc/xtensa-esp-elf/16.1.0/include/stddef.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/_stdint.h \
+ /home/restops/.espressif/tools/xtensa-esp-elf/esp-16.1.0_20260609/xtensa-esp-elf/picolibc/include/sys/_intsup.h \
+ /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/config/esp32/rev/min/full.cdep \
+ /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_two/build/config/libc/picolibc/newlib/compatibility.cdep
