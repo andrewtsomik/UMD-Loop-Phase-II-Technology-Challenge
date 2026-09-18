@@ -1,0 +1,9 @@
+Command: make -j 24 all
+/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/main/system_one.c:3:10: fatal error: hw.h: No such file or directory
+    3 | #include "hw.h"
+      |          ^~~~~~
+compilation terminated.
+configdep.c:684: in main: exec_process exited with error code: 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/build.make:76: esp-idf/main/CMakeFiles/__idf_main.dir/system_one.c.obj] Error 1
+make[1]: *** [CMakeFiles/Makefile2:7736: esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2

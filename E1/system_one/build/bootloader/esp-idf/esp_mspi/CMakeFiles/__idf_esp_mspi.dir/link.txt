@@ -1,0 +1,2 @@
+xtensa-esp32-elf-gcc-ar qc libesp_mspi.a CMakeFiles/__idf_esp_mspi.dir/spi_flash_wrap.c.obj CMakeFiles/__idf_esp_mspi.dir/spi_flash_os_tee_stub.c.obj CMakeFiles/__idf_esp_mspi.dir/__/__/esp_err_codes/esp_mspi_esp_err_codes.c.obj
+xtensa-esp32-elf-gcc-ranlib libesp_mspi.a

@@ -1,0 +1,2 @@
+xtensa-esp32-elf-gcc-ar qc libcomponents.a CMakeFiles/__idf_components.dir/hw.c.obj
+xtensa-esp32-elf-gcc-ranlib libcomponents.a

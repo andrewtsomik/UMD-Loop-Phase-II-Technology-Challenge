@@ -1,0 +1,15 @@
+manifest:
+  remotes:
+    - name: zephyrproject
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject
+      revision: v4.4.0
+      import:
+        name-allowlist:
+          - hal_espressif
+
+  self:
+    path: UMD-Loop-Phase-II-Technology-Challenge
