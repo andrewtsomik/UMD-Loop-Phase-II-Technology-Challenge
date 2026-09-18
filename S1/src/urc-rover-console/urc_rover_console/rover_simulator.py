@@ -3,7 +3,7 @@ import math
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, String
+from std_msgs.msg import String
 
 
 class RoverSimulator(Node):
@@ -12,23 +12,11 @@ class RoverSimulator(Node):
 
         self.battery_percentage = 100.0
         self.navigation_state = "NAVIGATING"
-        self.current_target = "ArUco Post 1"
+        self.current_target = "GNSS Target 1"
         self.distance_to_target = 24.0
-        self.completed_targets = 2
+        self.completed_targets = 0
         self.tick = 0
 
-        # Existing topics are preserved for the earlier prototypes.
-        self.battery_publisher = self.create_publisher(
-            Float32,
-            "/rover/battery_percentage",
-            10,
-        )
-
-        self.state_publisher = self.create_publisher(
-            String,
-            "/rover/navigation_state",
-            10,
-        )
 
         # This topic contains the complete dashboard telemetry.
         self.telemetry_publisher = self.create_publisher(
@@ -77,7 +65,7 @@ class RoverSimulator(Node):
                 "distance_m": round(self.distance_to_target, 1),
                 "gnss_accuracy_m": 0.7,
                 "completed_targets": self.completed_targets,
-                "total_targets": 7,
+                "total_targets": 3,
             },
             "power": {
                 "battery_percent": round(
@@ -161,14 +149,6 @@ class RoverSimulator(Node):
                 "thermal_state": "PASS",
             },
         }
-
-        battery_message = Float32()
-        battery_message.data = self.battery_percentage
-        self.battery_publisher.publish(battery_message)
-
-        state_message = String()
-        state_message.data = self.navigation_state
-        self.state_publisher.publish(state_message)
 
         telemetry_message = String()
         telemetry_message.data = json.dumps(telemetry)
