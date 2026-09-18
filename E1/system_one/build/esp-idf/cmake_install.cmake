@@ -779,6 +779,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/esp-idf/components/cmake_install.cmake")
+  include("/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/esp-idf/hw/cmake_install.cmake")
 endif()
 

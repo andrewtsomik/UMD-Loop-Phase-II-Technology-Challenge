@@ -1,0 +1,2 @@
+xtensa-esp32-elf-gcc-ar qc libhw.a CMakeFiles/__idf_hw.dir/hw.c.obj
+xtensa-esp32-elf-gcc-ranlib libhw.a

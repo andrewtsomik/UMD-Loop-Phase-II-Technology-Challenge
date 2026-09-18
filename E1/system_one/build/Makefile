@@ -2294,17 +2294,17 @@ __idf_main/fast:
 .PHONY : __idf_main/fast
 
 #=============================================================================
-# Target rules for targets named __idf_components
+# Target rules for targets named __idf_hw
 
 # Build rule for target.
-__idf_components: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 __idf_components
-.PHONY : __idf_components
+__idf_hw: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 __idf_hw
+.PHONY : __idf_hw
 
 # fast build rule for target.
-__idf_components/fast:
-	$(MAKE) $(MAKESILENT) -f esp-idf/components/CMakeFiles/__idf_components.dir/build.make esp-idf/components/CMakeFiles/__idf_components.dir/build
-.PHONY : __idf_components/fast
+__idf_hw/fast:
+	$(MAKE) $(MAKESILENT) -f esp-idf/hw/CMakeFiles/__idf_hw.dir/build.make esp-idf/hw/CMakeFiles/__idf_hw.dir/build
+.PHONY : __idf_hw/fast
 
 project_elf_src_esp32.obj: project_elf_src_esp32.c.obj
 .PHONY : project_elf_src_esp32.obj
@@ -2390,7 +2390,6 @@ help:
 	@echo "... __idf_app_update"
 	@echo "... __idf_bootloader_support"
 	@echo "... __idf_cmock"
-	@echo "... __idf_components"
 	@echo "... __idf_console"
 	@echo "... __idf_cxx"
 	@echo "... __idf_driver"
@@ -2474,6 +2473,7 @@ help:
 	@echo "... __idf_hal"
 	@echo "... __idf_heap"
 	@echo "... __idf_http_parser"
+	@echo "... __idf_hw"
 	@echo "... __idf_log"
 	@echo "... __idf_lwip"
 	@echo "... __idf_main"

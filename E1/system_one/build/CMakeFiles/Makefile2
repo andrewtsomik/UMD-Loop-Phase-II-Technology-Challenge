@@ -255,7 +255,7 @@ esp-idf/all: esp-idf/rt/all
 esp-idf/all: esp-idf/spiffs/all
 esp-idf/all: esp-idf/ulp/all
 esp-idf/all: esp-idf/main/all
-esp-idf/all: esp-idf/components/all
+esp-idf/all: esp-idf/hw/all
 .PHONY : esp-idf/all
 
 # Recursive "preinstall" directory target.
@@ -407,7 +407,7 @@ esp-idf/preinstall: esp-idf/rt/preinstall
 esp-idf/preinstall: esp-idf/spiffs/preinstall
 esp-idf/preinstall: esp-idf/ulp/preinstall
 esp-idf/preinstall: esp-idf/main/preinstall
-esp-idf/preinstall: esp-idf/components/preinstall
+esp-idf/preinstall: esp-idf/hw/preinstall
 .PHONY : esp-idf/preinstall
 
 # Recursive "clean" directory target.
@@ -559,7 +559,7 @@ esp-idf/clean: esp-idf/rt/clean
 esp-idf/clean: esp-idf/spiffs/clean
 esp-idf/clean: esp-idf/ulp/clean
 esp-idf/clean: esp-idf/main/clean
-esp-idf/clean: esp-idf/components/clean
+esp-idf/clean: esp-idf/hw/clean
 .PHONY : esp-idf/clean
 
 #=============================================================================
@@ -653,21 +653,6 @@ esp-idf/cmock/preinstall:
 # Recursive "clean" directory target.
 esp-idf/cmock/clean: esp-idf/cmock/CMakeFiles/__idf_cmock.dir/clean
 .PHONY : esp-idf/cmock/clean
-
-#=============================================================================
-# Directory level rules for directory esp-idf/components
-
-# Recursive "all" directory target.
-esp-idf/components/all: esp-idf/components/CMakeFiles/__idf_components.dir/all
-.PHONY : esp-idf/components/all
-
-# Recursive "preinstall" directory target.
-esp-idf/components/preinstall:
-.PHONY : esp-idf/components/preinstall
-
-# Recursive "clean" directory target.
-esp-idf/components/clean: esp-idf/components/CMakeFiles/__idf_components.dir/clean
-.PHONY : esp-idf/components/clean
 
 #=============================================================================
 # Directory level rules for directory esp-idf/console
@@ -2553,6 +2538,21 @@ esp-idf/http_parser/clean: esp-idf/http_parser/CMakeFiles/__idf_http_parser.dir/
 .PHONY : esp-idf/http_parser/clean
 
 #=============================================================================
+# Directory level rules for directory esp-idf/hw
+
+# Recursive "all" directory target.
+esp-idf/hw/all: esp-idf/hw/CMakeFiles/__idf_hw.dir/all
+.PHONY : esp-idf/hw/all
+
+# Recursive "preinstall" directory target.
+esp-idf/hw/preinstall:
+.PHONY : esp-idf/hw/preinstall
+
+# Recursive "clean" directory target.
+esp-idf/hw/clean: esp-idf/hw/CMakeFiles/__idf_hw.dir/clean
+.PHONY : esp-idf/hw/clean
+
+#=============================================================================
 # Directory level rules for directory esp-idf/ieee802154
 
 # Recursive "all" directory target.
@@ -3492,7 +3492,7 @@ CMakeFiles/system_one.elf.dir/all: esp-idf/rt/CMakeFiles/__idf_rt.dir/all
 CMakeFiles/system_one.elf.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
 CMakeFiles/system_one.elf.dir/all: esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all
 CMakeFiles/system_one.elf.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
-CMakeFiles/system_one.elf.dir/all: esp-idf/components/CMakeFiles/__idf_components.dir/all
+CMakeFiles/system_one.elf.dir/all: esp-idf/hw/CMakeFiles/__idf_hw.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/system_one.elf.dir/build.make CMakeFiles/system_one.elf.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/system_one.elf.dir/build.make CMakeFiles/system_one.elf.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target system_one.elf"
@@ -3706,7 +3706,7 @@ CMakeFiles/__ldgen_output_sections.ld.dir/all: esp-idf/perfmon/CMakeFiles/__idf_
 CMakeFiles/__ldgen_output_sections.ld.dir/all: esp-idf/rt/CMakeFiles/__idf_rt.dir/all
 CMakeFiles/__ldgen_output_sections.ld.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
 CMakeFiles/__ldgen_output_sections.ld.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
-CMakeFiles/__ldgen_output_sections.ld.dir/all: esp-idf/components/CMakeFiles/__idf_components.dir/all
+CMakeFiles/__ldgen_output_sections.ld.dir/all: esp-idf/hw/CMakeFiles/__idf_hw.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/__ldgen_output_sections.ld.dir/build.make CMakeFiles/__ldgen_output_sections.ld.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/__ldgen_output_sections.ld.dir/build.make CMakeFiles/__ldgen_output_sections.ld.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __ldgen_output_sections.ld"
@@ -4003,7 +4003,7 @@ esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all: esp-idf/esp_stdio/CMakeFiles/__i
 
 # Build rule for subdir invocation for target.
 esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/rule
@@ -4024,12 +4024,12 @@ esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/clean:
 esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/all: esp-idf/esp_hal_gpspi/CMakeFiles/__idf_esp_hal_gpspi.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/build.make esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/build.make esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_stdio"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=43 "Built target __idf_esp_stdio"
 .PHONY : esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 61
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_stdio/CMakeFiles/__idf_esp_stdio.dir/rule
@@ -4055,7 +4055,7 @@ esp-idf/esp_hal_gpspi/CMakeFiles/__idf_esp_hal_gpspi.dir/all: esp-idf/esp_hal_cl
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_gpspi/CMakeFiles/__idf_esp_hal_gpspi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 60
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_gpspi/CMakeFiles/__idf_esp_hal_gpspi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_gpspi/CMakeFiles/__idf_esp_hal_gpspi.dir/rule
@@ -4076,12 +4076,12 @@ esp-idf/esp_hal_gpspi/CMakeFiles/__idf_esp_hal_gpspi.dir/clean:
 esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/all: esp-idf/esp_hal_mspi/CMakeFiles/__idf_esp_hal_mspi.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/build.make esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/build.make esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=19 "Built target __idf_esp_hal_clock"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_clock"
 .PHONY : esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 61
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 59
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_clock/CMakeFiles/__idf_esp_hal_clock.dir/rule
@@ -4107,7 +4107,7 @@ esp-idf/esp_hal_mspi/CMakeFiles/__idf_esp_hal_mspi.dir/all: esp-idf/esp_hal_uart
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_mspi/CMakeFiles/__idf_esp_hal_mspi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 60
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 59
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_mspi/CMakeFiles/__idf_esp_hal_mspi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_mspi/CMakeFiles/__idf_esp_hal_mspi.dir/rule
@@ -4128,12 +4128,12 @@ esp-idf/esp_hal_mspi/CMakeFiles/__idf_esp_hal_mspi.dir/clean:
 esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/build.make esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/build.make esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_uart"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=25 "Built target __idf_esp_hal_uart"
 .PHONY : esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 59
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/rule
@@ -4154,12 +4154,12 @@ esp-idf/esp_hal_uart/CMakeFiles/__idf_esp_hal_uart.dir/clean:
 esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all: esp-idf/esp_driver_gpio/CMakeFiles/__idf_esp_driver_gpio.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/build.make esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/build.make esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=41 "Built target __idf_esp_pm"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_pm"
 .PHONY : esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 59
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/rule
@@ -4185,7 +4185,7 @@ esp-idf/esp_driver_gpio/CMakeFiles/__idf_esp_driver_gpio.dir/all: esp-idf/esp_mm
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_gpio/CMakeFiles/__idf_esp_driver_gpio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_gpio/CMakeFiles/__idf_esp_driver_gpio.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_gpio/CMakeFiles/__idf_esp_driver_gpio.dir/rule
@@ -4211,7 +4211,7 @@ esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/all: esp-idf/spi_flash/CMakeFiles/__i
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_mm/CMakeFiles/__idf_esp_mm.dir/rule
@@ -4237,7 +4237,7 @@ esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/all: esp-idf/esp_partition/CMak
 
 # Build rule for subdir invocation for target.
 esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 56
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/rule
@@ -4466,12 +4466,12 @@ esp-idf/partition_table/CMakeFiles/partition_table-flash.dir/clean:
 esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/all: esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/build.make esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/build.make esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=40 "Built target __idf_esp_partition"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_partition"
 .PHONY : esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 55
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 54
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/rule
@@ -4492,7 +4492,7 @@ esp-idf/esp_partition/CMakeFiles/__idf_esp_partition.dir/clean:
 esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/all: esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/build.make esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/build.make esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_app_format"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=8 "Built target __idf_esp_app_format"
 .PHONY : esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4518,12 +4518,12 @@ esp-idf/esp_app_format/CMakeFiles/__idf_esp_app_format.dir/clean:
 esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/all: esp-idf/efuse/CMakeFiles/__idf_efuse.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/build.make esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/build.make esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=24 "Built target __idf_esp_hal_security"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_security"
 .PHONY : esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 54
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 53
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_security/CMakeFiles/__idf_esp_hal_security.dir/rule
@@ -4752,7 +4752,7 @@ esp-idf/efuse/CMakeFiles/efuse_test_table.dir/clean:
 esp-idf/esp_hal_timg/CMakeFiles/__idf_esp_hal_timg.dir/all: esp-idf/esp_hal_wdt/CMakeFiles/__idf_esp_hal_wdt.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_timg/CMakeFiles/__idf_esp_hal_timg.dir/build.make esp-idf/esp_hal_timg/CMakeFiles/__idf_esp_hal_timg.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_timg/CMakeFiles/__idf_esp_hal_timg.dir/build.make esp-idf/esp_hal_timg/CMakeFiles/__idf_esp_hal_timg.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_timg"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=24 "Built target __idf_esp_hal_timg"
 .PHONY : esp-idf/esp_hal_timg/CMakeFiles/__idf_esp_hal_timg.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4783,7 +4783,7 @@ esp-idf/esp_hal_wdt/CMakeFiles/__idf_esp_hal_wdt.dir/all: esp-idf/esp_hal_i2s/CM
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_wdt/CMakeFiles/__idf_esp_hal_wdt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 52
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 51
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_wdt/CMakeFiles/__idf_esp_hal_wdt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_wdt/CMakeFiles/__idf_esp_hal_wdt.dir/rule
@@ -4804,12 +4804,12 @@ esp-idf/esp_hal_wdt/CMakeFiles/__idf_esp_hal_wdt.dir/clean:
 esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/all: esp-idf/esp_hal_ana_conv/CMakeFiles/__idf_esp_hal_ana_conv.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/build.make esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/build.make esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=21 "Built target __idf_esp_hal_i2s"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_i2s"
 .PHONY : esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 52
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 51
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_i2s/CMakeFiles/__idf_esp_hal_i2s.dir/rule
@@ -4856,7 +4856,7 @@ esp-idf/esp_hal_ana_conv/CMakeFiles/__idf_esp_hal_ana_conv.dir/clean:
 esp-idf/esp_security/CMakeFiles/__idf_esp_security.dir/all: esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_security/CMakeFiles/__idf_esp_security.dir/build.make esp-idf/esp_security/CMakeFiles/__idf_esp_security.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_security/CMakeFiles/__idf_esp_security.dir/build.make esp-idf/esp_security/CMakeFiles/__idf_esp_security.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=43 "Built target __idf_esp_security"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_security"
 .PHONY : esp-idf/esp_security/CMakeFiles/__idf_esp_security.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4887,7 +4887,7 @@ esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/all: esp-idf/
 
 # Build rule for subdir invocation for target.
 esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 50
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 51
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/rule
@@ -4913,7 +4913,7 @@ esp-idf/esp_mspi/CMakeFiles/__idf_esp_mspi.dir/all: esp-idf/esp_system/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_mspi/CMakeFiles/__idf_esp_mspi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 48
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 49
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_mspi/CMakeFiles/__idf_esp_mspi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_mspi/CMakeFiles/__idf_esp_mspi.dir/rule
@@ -4939,7 +4939,7 @@ esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/all: esp-idf/esp_common/CMake
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 47
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 48
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/rule
@@ -5017,7 +5017,7 @@ esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/all: esp-idf/esp_rom/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 44
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 45
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/rule
@@ -5043,7 +5043,7 @@ esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/all: esp-idf/hal/CMakeFiles/__idf_h
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 43
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 44
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/rule
@@ -5069,7 +5069,7 @@ esp-idf/hal/CMakeFiles/__idf_hal.dir/all: esp-idf/log/CMakeFiles/__idf_log.dir/a
 
 # Build rule for subdir invocation for target.
 esp-idf/hal/CMakeFiles/__idf_hal.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 42
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 43
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/hal/CMakeFiles/__idf_hal.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/hal/CMakeFiles/__idf_hal.dir/rule
@@ -5095,7 +5095,7 @@ esp-idf/log/CMakeFiles/__idf_log.dir/all: esp-idf/heap/CMakeFiles/__idf_heap.dir
 
 # Build rule for subdir invocation for target.
 esp-idf/log/CMakeFiles/__idf_log.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 41
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 42
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/log/CMakeFiles/__idf_log.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/log/CMakeFiles/__idf_log.dir/rule
@@ -5121,7 +5121,7 @@ esp-idf/heap/CMakeFiles/__idf_heap.dir/all: esp-idf/soc/CMakeFiles/__idf_soc.dir
 
 # Build rule for subdir invocation for target.
 esp-idf/heap/CMakeFiles/__idf_heap.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 40
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 41
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/heap/CMakeFiles/__idf_heap.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/heap/CMakeFiles/__idf_heap.dir/rule
@@ -5147,7 +5147,7 @@ esp-idf/soc/CMakeFiles/__idf_soc.dir/all: esp-idf/esp_hal_gpio/CMakeFiles/__idf_
 
 # Build rule for subdir invocation for target.
 esp-idf/soc/CMakeFiles/__idf_soc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 39
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 40
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/soc/CMakeFiles/__idf_soc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/soc/CMakeFiles/__idf_soc.dir/rule
@@ -5173,7 +5173,7 @@ esp-idf/esp_hal_gpio/CMakeFiles/__idf_esp_hal_gpio.dir/all: esp-idf/esp_hal_pmu/
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_gpio/CMakeFiles/__idf_esp_hal_gpio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 38
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 39
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_gpio/CMakeFiles/__idf_esp_hal_gpio.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_gpio/CMakeFiles/__idf_esp_hal_gpio.dir/rule
@@ -5199,7 +5199,7 @@ esp-idf/esp_hal_pmu/CMakeFiles/__idf_esp_hal_pmu.dir/all: esp-idf/esp_hal_touch_
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_pmu/CMakeFiles/__idf_esp_hal_pmu.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 38
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 39
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_pmu/CMakeFiles/__idf_esp_hal_pmu.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_pmu/CMakeFiles/__idf_esp_hal_pmu.dir/rule
@@ -5225,7 +5225,7 @@ esp-idf/esp_hal_touch_sens/CMakeFiles/__idf_esp_hal_touch_sens.dir/all: esp-idf/
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_touch_sens/CMakeFiles/__idf_esp_hal_touch_sens.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 38
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 39
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_touch_sens/CMakeFiles/__idf_esp_hal_touch_sens.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_touch_sens/CMakeFiles/__idf_esp_hal_touch_sens.dir/rule
@@ -5246,12 +5246,12 @@ esp-idf/esp_hal_touch_sens/CMakeFiles/__idf_esp_hal_touch_sens.dir/clean:
 esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/all: esp-idf/freertos/CMakeFiles/__idf_freertos.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/build.make esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/build.make esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=29,30,31,32,33 "Built target __idf_esp_hw_support"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=29,30,31,32 "Built target __idf_esp_hw_support"
 .PHONY : esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 38
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 39
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/rule
@@ -5277,7 +5277,7 @@ esp-idf/freertos/CMakeFiles/__idf_freertos.dir/all: esp-idf/esp_libc/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/freertos/CMakeFiles/__idf_freertos.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 33
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 35
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/freertos/CMakeFiles/__idf_freertos.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/freertos/CMakeFiles/__idf_freertos.dir/rule
@@ -5303,7 +5303,7 @@ esp-idf/esp_libc/CMakeFiles/__idf_esp_libc.dir/all: esp-idf/pthread/CMakeFiles/_
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_libc/CMakeFiles/__idf_esp_libc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 32
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 34
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_libc/CMakeFiles/__idf_esp_libc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_libc/CMakeFiles/__idf_esp_libc.dir/rule
@@ -5329,7 +5329,7 @@ esp-idf/pthread/CMakeFiles/__idf_pthread.dir/all: esp-idf/cxx/CMakeFiles/__idf_c
 
 # Build rule for subdir invocation for target.
 esp-idf/pthread/CMakeFiles/__idf_pthread.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 30
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 32
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/pthread/CMakeFiles/__idf_pthread.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/pthread/CMakeFiles/__idf_pthread.dir/rule
@@ -5355,7 +5355,7 @@ esp-idf/cxx/CMakeFiles/__idf_cxx.dir/all: esp-idf/esp_timer/CMakeFiles/__idf_esp
 
 # Build rule for subdir invocation for target.
 esp-idf/cxx/CMakeFiles/__idf_cxx.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 29
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 31
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/cxx/CMakeFiles/__idf_cxx.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/cxx/CMakeFiles/__idf_cxx.dir/rule
@@ -5381,7 +5381,7 @@ esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/all: esp-idf/esp_driver_dma/CMa
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 29
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 31
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/rule
@@ -5402,12 +5402,12 @@ esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/clean:
 esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/all: esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/build.make esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/build.make esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_dma"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=10 "Built target __idf_esp_driver_dma"
 .PHONY : esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 28
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 30
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_dma/CMakeFiles/__idf_esp_driver_dma.dir/rule
@@ -5433,7 +5433,7 @@ esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all: esp-idf/esp_driver_uar
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 28
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 29
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/rule
@@ -5459,7 +5459,7 @@ esp-idf/esp_driver_uart/CMakeFiles/__idf_esp_driver_uart.dir/all: esp-idf/mbedtl
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_uart/CMakeFiles/__idf_esp_driver_uart.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 28
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 29
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_uart/CMakeFiles/__idf_esp_driver_uart.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_uart/CMakeFiles/__idf_esp_driver_uart.dir/rule
@@ -5480,12 +5480,12 @@ esp-idf/esp_driver_uart/CMakeFiles/__idf_esp_driver_uart.dir/clean:
 esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/build.make esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/build.make esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=11 "Built target __idf_esp_driver_gptimer"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_gptimer"
 .PHONY : esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_gptimer/CMakeFiles/__idf_esp_driver_gptimer.dir/rule
@@ -5511,7 +5511,7 @@ esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/all: esp-idf/mbedtls/mbedtls/librar
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 28
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 29
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/rule
@@ -5615,7 +5615,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/everest/CMakeFiles/everest.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/everest/CMakeFiles/everest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/everest/CMakeFiles/everest.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/everest/CMakeFiles/everest.dir/rule
@@ -5641,7 +5641,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/p256-m/CMakeFiles/p256-m.dir/all: 
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/p256-m/CMakeFiles/p256-m.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/p256-m/CMakeFiles/p256-m.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/p256-m/CMakeFiles/p256-m.dir/rule
@@ -5667,7 +5667,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/builtin/CMakeFiles/builtin.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/builtin/CMakeFiles/builtin.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 20
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/builtin/CMakeFiles/builtin.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/builtin/CMakeFiles/builtin.dir/rule
@@ -5693,7 +5693,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/pqcp/CMakeFiles/pqcp.dir/all: esp-
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/pqcp/CMakeFiles/pqcp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 20
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/pqcp/CMakeFiles/pqcp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/drivers/pqcp/CMakeFiles/pqcp.dir/rule
@@ -5719,7 +5719,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/extras/CMakeFiles/extras.dir/all: esp-idf/
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/extras/CMakeFiles/extras.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 21
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 22
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/extras/CMakeFiles/extras.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/extras/CMakeFiles/extras.dir/rule
@@ -5745,7 +5745,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/platform/CMakeFiles/platform.dir/all: esp-
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/platform/CMakeFiles/platform.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 21
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 22
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/platform/CMakeFiles/platform.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/platform/CMakeFiles/platform.dir/rule
@@ -5771,7 +5771,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/utilities/CMakeFiles/utilities.dir/all: es
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/utilities/CMakeFiles/utilities.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 22
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 23
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/utilities/CMakeFiles/utilities.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/utilities/CMakeFiles/utilities.dir/rule
@@ -5803,7 +5803,7 @@ esp-idf/mbedtls/mbedtls/tf-psa-crypto/core/CMakeFiles/tfpsacrypto.dir/all: esp-i
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/tf-psa-crypto/core/CMakeFiles/tfpsacrypto.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 25
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 26
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/tf-psa-crypto/core/CMakeFiles/tfpsacrypto.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/tf-psa-crypto/core/CMakeFiles/tfpsacrypto.dir/rule
@@ -5829,7 +5829,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/all: esp-idf/mbedtls/mbe
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 28
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 29
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/rule
@@ -5855,7 +5855,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/all: esp-idf/mbedtls/mbed
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 27
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 28
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/rule
@@ -5881,7 +5881,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/all: esp-idf/xtensa/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/rule
@@ -5902,12 +5902,12 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/clean:
 esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/all: esp-idf/app_update/CMakeFiles/__idf_app_update.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/build.make esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/build.make esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_image_verify"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=33 "Built target __idf_esp_image_verify"
 .PHONY : esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_image_verify/CMakeFiles/__idf_esp_image_verify.dir/rule
@@ -5959,7 +5959,7 @@ esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/all: esp-idf/xtensa/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/rule
@@ -6032,7 +6032,7 @@ esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/clean:
 esp-idf/esp_phy/CMakeFiles/__idf_esp_phy.dir/all: esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_phy/CMakeFiles/__idf_esp_phy.dir/build.make esp-idf/esp_phy/CMakeFiles/__idf_esp_phy.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_phy/CMakeFiles/__idf_esp_phy.dir/build.make esp-idf/esp_phy/CMakeFiles/__idf_esp_phy.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_phy"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=40 "Built target __idf_esp_phy"
 .PHONY : esp-idf/esp_phy/CMakeFiles/__idf_esp_phy.dir/all
 
 # Build rule for subdir invocation for target.
@@ -6118,7 +6118,7 @@ esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/all: esp-idf/esp_event/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/rule
@@ -6144,7 +6144,7 @@ esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/all: esp-idf/esp_coex
 
 # Build rule for subdir invocation for target.
 esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 73
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 72
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/rule
@@ -6170,7 +6170,7 @@ esp-idf/esp_coex/CMakeFiles/__idf_esp_coex.dir/all: esp-idf/esp_wifi/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_coex/CMakeFiles/__idf_esp_coex.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 66
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_coex/CMakeFiles/__idf_esp_coex.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_coex/CMakeFiles/__idf_esp_coex.dir/rule
@@ -6198,7 +6198,7 @@ esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/all: esp-idf/esp_netif/CMakeFiles
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 66
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/rule
@@ -6224,7 +6224,7 @@ esp-idf/esp_driver_spi/CMakeFiles/__idf_esp_driver_spi.dir/all: esp-idf/xtensa/C
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_spi/CMakeFiles/__idf_esp_driver_spi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_spi/CMakeFiles/__idf_esp_driver_spi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_spi/CMakeFiles/__idf_esp_driver_spi.dir/rule
@@ -6250,7 +6250,7 @@ esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/all: esp-idf/xtensa/CMakeFi
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/rule
@@ -6276,7 +6276,7 @@ esp-idf/unity/CMakeFiles/__idf_unity.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xt
 
 # Build rule for subdir invocation for target.
 esp-idf/unity/CMakeFiles/__idf_unity.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/unity/CMakeFiles/__idf_unity.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/unity/CMakeFiles/__idf_unity.dir/rule
@@ -6303,7 +6303,7 @@ esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all: esp-idf/unity/CMakeFiles/__idf_uni
 
 # Build rule for subdir invocation for target.
 esp-idf/cmock/CMakeFiles/__idf_cmock.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/cmock/CMakeFiles/__idf_cmock.dir/rule
@@ -6329,7 +6329,7 @@ esp-idf/console/CMakeFiles/__idf_console.dir/all: esp-idf/xtensa/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/console/CMakeFiles/__idf_console.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/console/CMakeFiles/__idf_console.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/console/CMakeFiles/__idf_console.dir/rule
@@ -6355,7 +6355,7 @@ esp-idf/esp_hal_i2c/CMakeFiles/__idf_esp_hal_i2c.dir/all: esp-idf/xtensa/CMakeFi
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_i2c/CMakeFiles/__idf_esp_hal_i2c.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_i2c/CMakeFiles/__idf_esp_hal_i2c.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_i2c/CMakeFiles/__idf_esp_hal_i2c.dir/rule
@@ -6376,12 +6376,12 @@ esp-idf/esp_hal_i2c/CMakeFiles/__idf_esp_hal_i2c.dir/clean:
 esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/build.make esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/build.make esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=25 "Built target __idf_esp_hal_twai"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_twai"
 .PHONY : esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_twai/CMakeFiles/__idf_esp_hal_twai.dir/rule
@@ -6409,7 +6409,7 @@ esp-idf/driver/CMakeFiles/__idf_driver.dir/all: esp-idf/esp_hal_twai/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/driver/CMakeFiles/__idf_driver.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/driver/CMakeFiles/__idf_driver.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/driver/CMakeFiles/__idf_driver.dir/rule
@@ -6435,7 +6435,7 @@ esp-idf/http_parser/CMakeFiles/__idf_http_parser.dir/all: esp-idf/xtensa/CMakeFi
 
 # Build rule for subdir invocation for target.
 esp-idf/http_parser/CMakeFiles/__idf_http_parser.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/http_parser/CMakeFiles/__idf_http_parser.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/http_parser/CMakeFiles/__idf_http_parser.dir/rule
@@ -6462,7 +6462,7 @@ esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/all: esp-idf/http_parser/CMakeFiles
 
 # Build rule for subdir invocation for target.
 esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/rule
@@ -6488,7 +6488,7 @@ esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/all: esp-idf/xtensa/C
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/rule
@@ -6510,12 +6510,12 @@ esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/all: esp-idf/xtensa/CMakeFiles/__id
 esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/all: esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/build.make esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/build.make esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=8 "Built target __idf_esp_adc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_adc"
 .PHONY : esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_adc/CMakeFiles/__idf_esp_adc.dir/rule
@@ -6541,7 +6541,7 @@ esp-idf/esp_blockdev_util/CMakeFiles/__idf_esp_blockdev_util.dir/all: esp-idf/xt
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_blockdev_util/CMakeFiles/__idf_esp_blockdev_util.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_blockdev_util/CMakeFiles/__idf_esp_blockdev_util.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_blockdev_util/CMakeFiles/__idf_esp_blockdev_util.dir/rule
@@ -6567,7 +6567,7 @@ esp-idf/esp_driver_cam/CMakeFiles/__idf_esp_driver_cam.dir/all: esp-idf/xtensa/C
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_cam/CMakeFiles/__idf_esp_driver_cam.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_cam/CMakeFiles/__idf_esp_driver_cam.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_cam/CMakeFiles/__idf_esp_driver_cam.dir/rule
@@ -6589,12 +6589,12 @@ esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/all: esp-idf/xtensa/C
 esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/all: esp-idf/esp_driver_i2s/CMakeFiles/__idf_esp_driver_i2s.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/build.make esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/build.make esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=10 "Built target __idf_esp_driver_dac"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_dac"
 .PHONY : esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_dac/CMakeFiles/__idf_esp_driver_dac.dir/rule
@@ -6616,7 +6616,7 @@ esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/all: esp-idf/xtensa/C
 esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/all: esp-idf/esp_hal_i2c/CMakeFiles/__idf_esp_hal_i2c.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/build.make esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/build.make esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_i2c"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=11 "Built target __idf_esp_driver_i2c"
 .PHONY : esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/all
 
 # Build rule for subdir invocation for target.
@@ -6642,7 +6642,7 @@ esp-idf/esp_driver_i2c/CMakeFiles/__idf_esp_driver_i2c.dir/clean:
 esp-idf/esp_psram/CMakeFiles/__idf_esp_psram.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_psram/CMakeFiles/__idf_esp_psram.dir/build.make esp-idf/esp_psram/CMakeFiles/__idf_esp_psram.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_psram/CMakeFiles/__idf_esp_psram.dir/build.make esp-idf/esp_psram/CMakeFiles/__idf_esp_psram.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_psram"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=41 "Built target __idf_esp_psram"
 .PHONY : esp-idf/esp_psram/CMakeFiles/__idf_esp_psram.dir/all
 
 # Build rule for subdir invocation for target.
@@ -6673,7 +6673,7 @@ esp-idf/esp_hal_ledc/CMakeFiles/__idf_esp_hal_ledc.dir/all: esp-idf/xtensa/CMake
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_ledc/CMakeFiles/__idf_esp_hal_ledc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_ledc/CMakeFiles/__idf_esp_hal_ledc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_ledc/CMakeFiles/__idf_esp_hal_ledc.dir/rule
@@ -6695,12 +6695,12 @@ esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/all: esp-idf/xtensa
 esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/all: esp-idf/esp_hal_ledc/CMakeFiles/__idf_esp_hal_ledc.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/build.make esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/build.make esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=12 "Built target __idf_esp_driver_ledc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_ledc"
 .PHONY : esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_ledc/CMakeFiles/__idf_esp_driver_ledc.dir/rule
@@ -6726,7 +6726,7 @@ esp-idf/esp_hal_mcpwm/CMakeFiles/__idf_esp_hal_mcpwm.dir/all: esp-idf/xtensa/CMa
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_mcpwm/CMakeFiles/__idf_esp_hal_mcpwm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_mcpwm/CMakeFiles/__idf_esp_hal_mcpwm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_mcpwm/CMakeFiles/__idf_esp_hal_mcpwm.dir/rule
@@ -6748,7 +6748,7 @@ esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/all: esp-idf/xten
 esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/all: esp-idf/esp_hal_mcpwm/CMakeFiles/__idf_esp_hal_mcpwm.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/build.make esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/build.make esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_mcpwm"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=12 "Built target __idf_esp_driver_mcpwm"
 .PHONY : esp-idf/esp_driver_mcpwm/CMakeFiles/__idf_esp_driver_mcpwm.dir/all
 
 # Build rule for subdir invocation for target.
@@ -6779,7 +6779,7 @@ esp-idf/esp_hal_pcnt/CMakeFiles/__idf_esp_hal_pcnt.dir/all: esp-idf/xtensa/CMake
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_pcnt/CMakeFiles/__idf_esp_hal_pcnt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_pcnt/CMakeFiles/__idf_esp_hal_pcnt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_pcnt/CMakeFiles/__idf_esp_hal_pcnt.dir/rule
@@ -6801,12 +6801,12 @@ esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/all: esp-idf/xtensa
 esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/all: esp-idf/esp_hal_pcnt/CMakeFiles/__idf_esp_hal_pcnt.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/build.make esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/build.make esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=13 "Built target __idf_esp_driver_pcnt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_pcnt"
 .PHONY : esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/rule
@@ -6827,12 +6827,12 @@ esp-idf/esp_driver_pcnt/CMakeFiles/__idf_esp_driver_pcnt.dir/clean:
 esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/build.make esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/build.make esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=23 "Built target __idf_esp_hal_rmt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_rmt"
 .PHONY : esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/rule
@@ -6854,12 +6854,12 @@ esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/all: esp-idf/xtensa/C
 esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/all: esp-idf/esp_hal_rmt/CMakeFiles/__idf_esp_hal_rmt.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/build.make esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/build.make esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_rmt"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=13 "Built target __idf_esp_driver_rmt"
 .PHONY : esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/rule
@@ -6880,7 +6880,7 @@ esp-idf/esp_driver_rmt/CMakeFiles/__idf_esp_driver_rmt.dir/clean:
 esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/build.make esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/build.make esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_sd"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=23 "Built target __idf_esp_hal_sd"
 .PHONY : esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/all
 
 # Build rule for subdir invocation for target.
@@ -6935,12 +6935,12 @@ esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/all: esp-idf/
 esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/all: esp-idf/sdmmc/CMakeFiles/__idf_sdmmc.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/build.make esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/build.make esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=14 "Built target __idf_esp_driver_sd_intf"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_sd_intf"
 .PHONY : esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_sd_intf/CMakeFiles/__idf_esp_driver_sd_intf.dir/rule
@@ -6962,12 +6962,12 @@ esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/all: esp-idf/xtensa
 esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/all: esp-idf/esp_hal_sd/CMakeFiles/__idf_esp_hal_sd.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/build.make esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/build.make esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_driver_sdio"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=14 "Built target __idf_esp_driver_sdio"
 .PHONY : esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_sdio/CMakeFiles/__idf_esp_driver_sdio.dir/rule
@@ -6993,7 +6993,7 @@ esp-idf/esp_driver_sdm/CMakeFiles/__idf_esp_driver_sdm.dir/all: esp-idf/xtensa/C
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_sdm/CMakeFiles/__idf_esp_driver_sdm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_sdm/CMakeFiles/__idf_esp_driver_sdm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_sdm/CMakeFiles/__idf_esp_driver_sdm.dir/rule
@@ -7022,7 +7022,7 @@ esp-idf/esp_driver_sdmmc/CMakeFiles/__idf_esp_driver_sdmmc.dir/all: esp-idf/esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_sdmmc/CMakeFiles/__idf_esp_driver_sdmmc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_sdmmc/CMakeFiles/__idf_esp_driver_sdmmc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_sdmmc/CMakeFiles/__idf_esp_driver_sdmmc.dir/rule
@@ -7077,7 +7077,7 @@ esp-idf/esp_driver_touch_sens/CMakeFiles/__idf_esp_driver_touch_sens.dir/all: es
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_touch_sens/CMakeFiles/__idf_esp_driver_touch_sens.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_touch_sens/CMakeFiles/__idf_esp_driver_touch_sens.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_touch_sens/CMakeFiles/__idf_esp_driver_touch_sens.dir/rule
@@ -7104,7 +7104,7 @@ esp-idf/esp_driver_twai/CMakeFiles/__idf_esp_driver_twai.dir/all: esp-idf/esp_ha
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_driver_twai/CMakeFiles/__idf_esp_driver_twai.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_driver_twai/CMakeFiles/__idf_esp_driver_twai.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_driver_twai/CMakeFiles/__idf_esp_driver_twai.dir/rule
@@ -7125,7 +7125,7 @@ esp-idf/esp_driver_twai/CMakeFiles/__idf_esp_driver_twai.dir/clean:
 esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/build.make esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/build.make esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_emac"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=19 "Built target __idf_esp_hal_emac"
 .PHONY : esp-idf/esp_hal_emac/CMakeFiles/__idf_esp_hal_emac.dir/all
 
 # Build rule for subdir invocation for target.
@@ -7181,7 +7181,7 @@ esp-idf/esp_eth/CMakeFiles/__idf_esp_eth.dir/clean:
 esp-idf/esp_hal_lcd/CMakeFiles/__idf_esp_hal_lcd.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_lcd/CMakeFiles/__idf_esp_hal_lcd.dir/build.make esp-idf/esp_hal_lcd/CMakeFiles/__idf_esp_hal_lcd.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hal_lcd/CMakeFiles/__idf_esp_hal_lcd.dir/build.make esp-idf/esp_hal_lcd/CMakeFiles/__idf_esp_hal_lcd.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hal_lcd"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=21 "Built target __idf_esp_hal_lcd"
 .PHONY : esp-idf/esp_hal_lcd/CMakeFiles/__idf_esp_hal_lcd.dir/all
 
 # Build rule for subdir invocation for target.
@@ -7211,12 +7211,12 @@ esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all: esp-idf/esp_netif/CMakeFiles/_
 esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all: esp-idf/esp_driver_spi/CMakeFiles/__idf_esp_driver_spi.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/build.make esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/build.make esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=26 "Built target __idf_esp_hid"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_hid"
 .PHONY : esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 74
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 73
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/rule
@@ -7244,7 +7244,7 @@ esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/all: esp-idf/esp-tls/CM
 
 # Build rule for subdir invocation for target.
 esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/rule
@@ -7269,7 +7269,7 @@ esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/all: esp-idf/esp-tl
 esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/all: esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/build.make esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/build.make esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_esp_http_client"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num=26 "Built target __idf_esp_http_client"
 .PHONY : esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/all
 
 # Build rule for subdir invocation for target.
@@ -7302,7 +7302,7 @@ esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/all: esp-idf/http_p
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/rule
@@ -7363,7 +7363,7 @@ esp-idf/esp_https_server/CMakeFiles/__idf_esp_https_server.dir/all: esp-idf/esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_https_server/CMakeFiles/__idf_esp_https_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_https_server/CMakeFiles/__idf_esp_https_server.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_https_server/CMakeFiles/__idf_esp_https_server.dir/rule
@@ -7395,7 +7395,7 @@ esp-idf/esp_lcd/CMakeFiles/__idf_esp_lcd.dir/all: esp-idf/esp_hal_lcd/CMakeFiles
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_lcd/CMakeFiles/__idf_esp_lcd.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_lcd/CMakeFiles/__idf_esp_lcd.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/esp_lcd/CMakeFiles/__idf_esp_lcd.dir/rule
@@ -7421,7 +7421,7 @@ esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all: esp-idf/xtensa/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/rule
@@ -7518,7 +7518,7 @@ esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/all: esp-idf/xtensa/C
 
 # Build rule for subdir invocation for target.
 esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 64
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/rule
@@ -7551,7 +7551,7 @@ esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/all: esp-idf/wear_levelling/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/rule
@@ -7577,7 +7577,7 @@ esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/all: esp-idf/xtensa/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/rule
@@ -7603,7 +7603,7 @@ esp-idf/rt/CMakeFiles/__idf_rt.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.d
 
 # Build rule for subdir invocation for target.
 esp-idf/rt/CMakeFiles/__idf_rt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/rt/CMakeFiles/__idf_rt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/rt/CMakeFiles/__idf_rt.dir/rule
@@ -7629,7 +7629,7 @@ esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all: esp-idf/xtensa/CMakeFiles/__idf_
 
 # Build rule for subdir invocation for target.
 esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
 .PHONY : esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/rule
@@ -7731,7 +7731,7 @@ esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/perfmon/CMakeFiles/__idf_per
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/rt/CMakeFiles/__idf_rt.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/components/CMakeFiles/__idf_components.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/hw/CMakeFiles/__idf_hw.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_main"
@@ -7754,30 +7754,30 @@ esp-idf/main/CMakeFiles/__idf_main.dir/clean:
 .PHONY : esp-idf/main/CMakeFiles/__idf_main.dir/clean
 
 #=============================================================================
-# Target rules for target esp-idf/components/CMakeFiles/__idf_components.dir
+# Target rules for target esp-idf/hw/CMakeFiles/__idf_hw.dir
 
 # All Build rule for target.
-esp-idf/components/CMakeFiles/__idf_components.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
-	$(MAKE) $(MAKESILENT) -f esp-idf/components/CMakeFiles/__idf_components.dir/build.make esp-idf/components/CMakeFiles/__idf_components.dir/depend
-	$(MAKE) $(MAKESILENT) -f esp-idf/components/CMakeFiles/__idf_components.dir/build.make esp-idf/components/CMakeFiles/__idf_components.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_components"
-.PHONY : esp-idf/components/CMakeFiles/__idf_components.dir/all
+esp-idf/hw/CMakeFiles/__idf_hw.dir/all: esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
+	$(MAKE) $(MAKESILENT) -f esp-idf/hw/CMakeFiles/__idf_hw.dir/build.make esp-idf/hw/CMakeFiles/__idf_hw.dir/depend
+	$(MAKE) $(MAKESILENT) -f esp-idf/hw/CMakeFiles/__idf_hw.dir/build.make esp-idf/hw/CMakeFiles/__idf_hw.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles --progress-num= "Built target __idf_hw"
+.PHONY : esp-idf/hw/CMakeFiles/__idf_hw.dir/all
 
 # Build rule for subdir invocation for target.
-esp-idf/components/CMakeFiles/__idf_components.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 63
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/components/CMakeFiles/__idf_components.dir/all
+esp-idf/hw/CMakeFiles/__idf_hw.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 62
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/hw/CMakeFiles/__idf_hw.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/restops/UMD-Loop-Phase-II-Technology-Challenge/E1/system_one/build/CMakeFiles 0
-.PHONY : esp-idf/components/CMakeFiles/__idf_components.dir/rule
+.PHONY : esp-idf/hw/CMakeFiles/__idf_hw.dir/rule
 
 # Convenience name for target.
-__idf_components: esp-idf/components/CMakeFiles/__idf_components.dir/rule
-.PHONY : __idf_components
+__idf_hw: esp-idf/hw/CMakeFiles/__idf_hw.dir/rule
+.PHONY : __idf_hw
 
 # clean rule for target.
-esp-idf/components/CMakeFiles/__idf_components.dir/clean:
-	$(MAKE) $(MAKESILENT) -f esp-idf/components/CMakeFiles/__idf_components.dir/build.make esp-idf/components/CMakeFiles/__idf_components.dir/clean
-.PHONY : esp-idf/components/CMakeFiles/__idf_components.dir/clean
+esp-idf/hw/CMakeFiles/__idf_hw.dir/clean:
+	$(MAKE) $(MAKESILENT) -f esp-idf/hw/CMakeFiles/__idf_hw.dir/build.make esp-idf/hw/CMakeFiles/__idf_hw.dir/clean
+.PHONY : esp-idf/hw/CMakeFiles/__idf_hw.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.
