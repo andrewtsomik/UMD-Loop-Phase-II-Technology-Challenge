@@ -215,6 +215,48 @@ def parse_lat_lon(lat_value: Any, lon_value: Any) -> Tuple[float, float]:
     return parse_latitude(lat_value), parse_longitude(lon_value)
 
 
+FORMAT_DD = 'DD'
+FORMAT_DDM = 'DDM'
+FORMAT_DMS = 'DMS'
+COORDINATE_FORMATS = (FORMAT_DD, FORMAT_DDM, FORMAT_DMS)
+
+_DD_DECIMALS = 6      # ~0.1 m
+_DDM_DECIMALS = 4     # minutes: ~0.2 m
+_DMS_DECIMALS = 2     # seconds: ~0.3 m
+
+
+def _format_angle(value: float, hemispheres: str, fmt: str) -> str:
+    if fmt not in COORDINATE_FORMATS:
+        raise ValueError(f'unknown coordinate format {fmt!r}; use one of {COORDINATE_FORMATS}')
+    hemisphere = hemispheres[1] if value < 0 else hemispheres[0]
+    magnitude = abs(float(value))
+    if fmt == FORMAT_DD:
+        return f'{magnitude:.{_DD_DECIMALS}f}\N{DEGREE SIGN} {hemisphere}'
+    # Round in integer units of the smallest field so carries (59.99999' -> 60')
+    # propagate correctly instead of printing a field of 60.
+    if fmt == FORMAT_DDM:
+        scale = 10 ** _DDM_DECIMALS
+        units = round(magnitude * 60 * scale)
+        degrees, rest = divmod(units, 60 * scale)
+        return (f"{degrees}\N{DEGREE SIGN} {rest / scale:.{_DDM_DECIMALS}f}' {hemisphere}")
+    scale = 10 ** _DMS_DECIMALS
+    units = round(magnitude * 3600 * scale)
+    degrees, rest = divmod(units, 3600 * scale)
+    minutes, sec_units = divmod(rest, 60 * scale)
+    return (f"{degrees}\N{DEGREE SIGN} {minutes}' "
+            f'{sec_units / scale:.{_DMS_DECIMALS}f}" {hemisphere}')
+
+
+def format_latitude(lat_deg: float, fmt: str = FORMAT_DD) -> str:
+    """Format a latitude as DD, DDM or DMS text that parse_latitude() reads back."""
+    return _format_angle(validate_coordinate(lat_deg, 0.0)[0], 'NS', fmt)
+
+
+def format_longitude(lon_deg: float, fmt: str = FORMAT_DD) -> str:
+    """Format a longitude as DD, DDM or DMS text that parse_longitude() reads back."""
+    return _format_angle(validate_coordinate(0.0, lon_deg)[1], 'EW', fmt)
+
+
 # ---- the local frame -----------------------------------------------------
 
 class LocalFrame:
