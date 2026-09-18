@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QListWidget, QMainWindow, QProgressBar, QPushButton, QScrollArea,
     QVBoxLayout, QWidget,
 )
+from urc_rover_console.telemetry_monitor import TelemetryMonitor
 
 
 def value_label(text="--"):
@@ -25,13 +26,16 @@ def add_row(layout, row, name, widget):
 
 
 class RoverConsole(QMainWindow):
-    TARGETS = ["GNSS Location 1", "GNSS Location 2", "ArUco Post 1",
-               "ArUco Post 2", "Orange Mallet", "Rock Pick Hammer", "Water Bottle"]
+    TARGETS = [
+    "GNSS Target 1",
+    "GNSS Target 2",
+    "GNSS Target 3",
+]
 
     def __init__(self, node):
         super().__init__()
         self.node = node
-        self.last_telemetry = None
+        self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
         self.start_time = time.monotonic()
         self.setWindowTitle("URC Autonomous Navigation Rover Operations Console")
         self.resize(1500, 900)
@@ -187,17 +191,24 @@ class RoverConsole(QMainWindow):
     def update_clock_and_link(self):
         elapsed = int(time.monotonic() - self.start_time)
         self.clock.setText(f"{elapsed // 60:02d}:{elapsed % 60:02d}")
-        if self.last_telemetry is None:
-            return
-        age = time.monotonic() - self.last_telemetry
-        if age <= 2.5:
-            self.link.setObjectName("active"); self.link.setText(f"LINK ACTIVE · {age:.1f}s")
+
+        state, age = self.telemetry_monitor.connection_state()
+
+        if state == "waiting":
+            self.link.setObjectName("waiting")
+            self.link.setText("WAITING FOR TELEMETRY")
+        elif state == "active":
+            self.link.setObjectName("active")
+            self.link.setText(f"LINK ACTIVE · {age:.1f}s")
         else:
-            self.link.setObjectName("stale"); self.link.setText(f"TELEMETRY STALE · {age:.1f}s")
-        self.link.style().unpolish(self.link); self.link.style().polish(self.link)
+            self.link.setObjectName("stale")
+            self.link.setText(f"TELEMETRY STALE · {age:.1f}s")
+
+        self.link.style().unpolish(self.link)
+        self.link.style().polish(self.link)
 
     def update_telemetry(self, message):
-        self.last_telemetry = time.monotonic()
+        self.telemetry_monitor.mark_received()
         try:
             data = json.loads(message.data)
         except json.JSONDecodeError:
