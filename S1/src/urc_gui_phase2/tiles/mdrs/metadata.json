@@ -13,7 +13,8 @@
   "min_zoom": 12,
   "max_zoom": 17,
   "tile_count": 699,
-  "attribution": "&copy; OpenStreetMap contributors",
-  "source": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-  "downloaded_utc": "2026-09-18T22:55:24+00:00"
+  "attribution": "&copy; OpenStreetMap contributors (ODbL)",
+  "source": "OpenStreetMap data via Overpass API (see docs/OFFLINE_MAP.md)",
+  "renderer": "mapnik 3.1.0 (tools/render_tiles.py)",
+  "rendered_utc": "2026-09-19T18:06:09+00:00"
 }
