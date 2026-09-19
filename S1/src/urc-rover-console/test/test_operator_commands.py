@@ -97,6 +97,22 @@ class FakeNode:
         self._events.append(('target', east_m, north_m))
 
 
+class FakeTrack:
+    def __init__(self, events):
+        self._events = events
+
+    def reset(self):
+        self._events.append(('track', 'reset'))
+
+
+class FakeMapWidget:
+    def __init__(self, events):
+        self._events = events
+
+    def clear_rover_track(self):
+        self._events.append(('map', 'clear_rover_track'))
+
+
 class FakeConsole:
     send_command = RoverConsole.send_command
     publish_active_target = RoverConsole.publish_active_target
@@ -111,6 +127,8 @@ class FakeConsole:
         self.mission_panel = FakeMissionPanel()
         self.command_publisher = FakePublisher(self.events)
         self.node = FakeNode(self.events)
+        self.rover_track = FakeTrack(self.events)
+        self.map_widget = FakeMapWidget(self.events)
 
 
 def test_start_without_active_waypoint_is_blocked():
@@ -150,6 +168,17 @@ def test_non_start_command_does_not_require_active_waypoint():
 
     assert console.send_command('STOP_MISSION') is True
     assert console.events == [('command', 'STOP_MISSION')]
+
+
+def test_reset_clears_track_after_command_is_published():
+    console = FakeConsole(active_target=None)
+
+    assert console.send_command('RESET_MISSION') is True
+    assert console.events == [
+        ('command', 'RESET_MISSION'),
+        ('track', 'reset'),
+        ('map', 'clear_rover_track'),
+    ]
 
 
 def test_removing_active_waypoint_sends_target_cancellation():

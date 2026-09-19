@@ -26,6 +26,7 @@ from urc_gui_phase2.mission_panel import (
 )
 from urc_gui_phase2.coordinate_convert import LocalFrame
 from urc_gui_phase2.operator_gui_node import OperatorGuiNode
+from urc_gui_phase2.rover_track import RoverTrack
 
 
 class RoverConsole(QMainWindow):
@@ -35,6 +36,7 @@ class RoverConsole(QMainWindow):
         self.node = node
         self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
         self.start_time = time.monotonic()
+        self.rover_track = RoverTrack()
         origin = self.node.spawn_origin()
 
         if origin is None:
@@ -263,7 +265,7 @@ class RoverConsole(QMainWindow):
         )
 
         self.mission_controller.roverMoved.connect(
-            self.map_widget.set_rover_position
+            self.on_rover_moved
         )
 
         self.mission_controller.frameChanged.connect(
@@ -327,6 +329,28 @@ class RoverConsole(QMainWindow):
             latitude,
             longitude,
         )
+
+    def on_rover_moved(self, latitude, longitude):
+        """Update marker, stable heading, and traveled path from a GNSS fix."""
+        self.map_widget.set_rover_position(latitude, longitude)
+        rover_enu = self.mission_controller.rover_enu()
+        if rover_enu is None:
+            return
+
+        changed = self.rover_track.add_fix(
+            latitude,
+            longitude,
+            rover_enu.east_m,
+            rover_enu.north_m,
+        )
+        if not changed:
+            return
+
+        self.map_widget.set_rover_path(self.rover_track.points)
+        if self.rover_track.heading_deg is not None:
+            self.map_widget.set_rover_heading(
+                self.rover_track.heading_deg
+            )
 
     def publish_active_target(self, _waypoint):
         """Publish the active target in the local REP 103 frame."""
@@ -400,6 +424,13 @@ class RoverConsole(QMainWindow):
         message = String()
         message.data = command
         self.command_publisher.publish(message)
+
+        if command == "RESET_MISSION":
+            # STOP and ABORT preserve the track for review; RESET explicitly
+            # starts a new run and therefore clears historical map overlays.
+            self.rover_track.reset()
+            self.map_widget.clear_rover_track()
+
         self.feedback.setText(f"Command sent: {command.replace('_', ' ')}")
         return True
 
