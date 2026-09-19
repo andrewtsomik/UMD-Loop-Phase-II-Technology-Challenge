@@ -1,0 +1,19 @@
+{
+  "name": "MDRS",
+  "center": [
+    38.4058,
+    -110.7919
+  ],
+  "bounds": [
+    38.383342220625224,
+    -110.82055863085093,
+    38.428257779374775,
+    -110.76324136914907
+  ],
+  "min_zoom": 12,
+  "max_zoom": 17,
+  "tile_count": 699,
+  "attribution": "&copy; OpenStreetMap contributors",
+  "source": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  "downloaded_utc": "2026-09-18T22:55:24+00:00"
+}

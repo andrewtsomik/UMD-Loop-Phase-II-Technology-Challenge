@@ -1,0 +1,169 @@
+"""Mission editor panel: waypoint list + coordinate entry + edit buttons.
+
+Talks only to a MissionController (signals in, methods out). Errors from the
+model/frame are shown in the status line, never swallowed and never raised
+into Qt's event loop.
+"""
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (
+    QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPushButton,
+    QVBoxLayout, QWidget)
+
+from urc_gui_phase2.coordinate_convert import format_latitude, format_longitude
+from urc_gui_phase2.coordinate_entry import CoordinateEntryWidget
+from urc_gui_phase2.mission_controller import MissionController
+from urc_gui_phase2.mission_model import InvalidCoordinateError, Status
+
+_STATUS_MARK = {Status.PENDING: ' ', Status.ACTIVE: '>', Status.DONE: 'x'}
+_USER_ERRORS = (InvalidCoordinateError, LookupError, IndexError, ValueError, OSError)
+
+
+class MissionPanel(QWidget):
+    def __init__(self, controller: MissionController, parent=None):
+        super().__init__(parent)
+        self._ctl = controller
+        self._list = QListWidget()
+        self._name = QLineEdit()
+        self._name.setPlaceholderText('Waypoint name')
+        self._entry = CoordinateEntryWidget()
+        self._status = QLabel()
+        self._status.setWordWrap(True)
+
+        self._add = QPushButton('Add')
+        self._update = QPushButton('Update selected')
+        self._remove = QPushButton('Remove')
+        self._up = QPushButton('Up')
+        self._down = QPushButton('Down')
+        self._activate = QPushButton('Set active')
+        self._complete = QPushButton('Complete active')
+        self._save = QPushButton('Save...')
+        self._load = QPushButton('Load...')
+
+        def row(*widgets):
+            box = QHBoxLayout()
+            for w in widgets:
+                box.addWidget(w)
+            return box
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel('Waypoints  (> active, x done)'))
+        layout.addWidget(self._list, 1)
+        layout.addLayout(row(self._up, self._down, self._remove))
+        layout.addLayout(row(self._activate, self._complete))
+        layout.addWidget(self._name)
+        layout.addWidget(self._entry)
+        layout.addLayout(row(self._add, self._update))
+        layout.addLayout(row(self._save, self._load))
+        layout.addWidget(self._status)
+
+        self._add.clicked.connect(self._on_add)
+        self._update.clicked.connect(self._on_update)
+        self._remove.clicked.connect(lambda: self._run_on_selected(self._ctl.remove_waypoint))
+        self._up.clicked.connect(lambda: self._run_on_selected(self._ctl.move_up))
+        self._down.clicked.connect(lambda: self._run_on_selected(self._ctl.move_down))
+        self._activate.clicked.connect(lambda: self._run_on_selected(self._ctl.activate))
+        self._complete.clicked.connect(lambda: self._run(self._ctl.complete_active))
+        self._save.clicked.connect(self._on_save)
+        self._load.clicked.connect(self._on_load)
+        self._entry.validityChanged.connect(self._sync_buttons)
+        self._list.currentItemChanged.connect(self._on_list_selection)
+
+        self._ctl.missionChanged.connect(self._refresh)
+        self._ctl.selectionChanged.connect(self._on_controller_selection)
+        self._refresh()
+
+    # -- helpers ---------------------------------------------------------------
+
+    def _run_on_selected(self, func):
+        wp_id = self._ctl.selected_id
+        if wp_id is None:
+            self._say('Select a waypoint first.', ok=False)
+            return None
+        return self._run(func, wp_id)
+
+    def _run(self, func, *args, **kwargs):
+        """Call a controller command; report expected user errors in the status line."""
+        try:
+            result = func(*args, **kwargs)
+        except _USER_ERRORS as exc:
+            self._say(str(exc), ok=False)
+            return None
+        self._say('', ok=True)
+        return result
+
+    def _say(self, text: str, ok: bool) -> None:
+        self._status.setText(text)
+        self._status.setStyleSheet('color: %s;' % ('#1b5e20' if ok else '#b71c1c'))
+
+    def _sync_buttons(self, *_):
+        has_sel = self._ctl.selected_id is not None
+        valid = self._entry.is_valid
+        self._add.setEnabled(valid)
+        self._update.setEnabled(valid and has_sel)
+        for button in (self._remove, self._up, self._down, self._activate):
+            button.setEnabled(has_sel)
+        self._complete.setEnabled(self._ctl.active_target() is not None)
+
+    # -- actions ---------------------------------------------------------------
+
+    def _on_add(self):
+        coord = self._entry.coordinate()
+        if coord is None:
+            return
+        name = self._name.text().strip() or f'WP{len(self._ctl.model) + 1}'
+        wp = self._run(self._ctl.add_waypoint, name, coord[0], coord[1])
+        if wp is not None:
+            self._ctl.select(wp.id)
+            self._name.clear()
+            self._entry.clear()
+
+    def _on_update(self):
+        coord, wp_id = self._entry.coordinate(), self._ctl.selected_id
+        if coord is None or wp_id is None:
+            return
+        name = self._name.text().strip() or None
+        self._run(self._ctl.edit_waypoint, wp_id, name=name, lat_deg=coord[0], lon_deg=coord[1])
+
+    def _on_save(self):
+        path, _ = QFileDialog.getSaveFileName(self, 'Save mission', 'mission.json',
+                                              'Mission (*.json)')
+        if path:
+            self._run(self._ctl.save, path)
+
+    def _on_load(self):
+        path, _ = QFileDialog.getOpenFileName(self, 'Load mission', '', 'Mission (*.json)')
+        if path:
+            self._run(self._ctl.load, path)
+
+    # -- controller -> view --------------------------------------------------
+
+    def _refresh(self):
+        selected = self._ctl.selected_id
+        self._list.blockSignals(True)
+        self._list.clear()
+        for wp in self._ctl.model:
+            item = QListWidgetItem(
+                f'[{_STATUS_MARK[wp.status]}] {wp.name}   '
+                f'{format_latitude(wp.lat_deg)}  {format_longitude(wp.lon_deg)}')
+            item.setData(Qt.UserRole, wp.id)
+            self._list.addItem(item)
+            if wp.id == selected:
+                self._list.setCurrentItem(item)
+        self._list.blockSignals(False)
+        self._sync_buttons()
+
+    def _on_list_selection(self, current, _previous):
+        wp_id = current.data(Qt.UserRole) if current is not None else None
+        try:
+            self._ctl.select(wp_id)
+        except LookupError:
+            return
+
+    def _on_controller_selection(self, wp_id):
+        self._refresh()
+        if wp_id is not None:
+            wp = self._ctl.model.get(wp_id)
+            self._name.setText(wp.name)
+            self._entry.set_coordinate(wp.lat_deg, wp.lon_deg)
+        self._sync_buttons()
