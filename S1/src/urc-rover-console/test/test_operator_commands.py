@@ -1,5 +1,6 @@
 """Focused tests for command safety in the combined rover console."""
 
+import json
 import sys
 from types import ModuleType, SimpleNamespace
 
@@ -70,8 +71,10 @@ class FakeMissionPanel:
 
 
 class FakeMissionController:
-    def __init__(self, active_target, frame_available):
+    def __init__(self, active_target, frame_available, next_waypoint=None):
         self._active_target = active_target
+        self._next_waypoint = next_waypoint
+        self.completed_count = 0
         self.frame = object() if frame_available else None
 
     def active_target(self):
@@ -79,6 +82,13 @@ class FakeMissionController:
 
     def active_target_enu(self):
         return SimpleNamespace(east_m=12.5, north_m=-3.0)
+
+    def complete_active(self):
+        if self._active_target is None:
+            raise ValueError('no active waypoint to complete')
+        self.completed_count += 1
+        self._active_target = self._next_waypoint
+        return self._next_waypoint
 
 
 class FakePublisher:
@@ -116,19 +126,28 @@ class FakeMapWidget:
 class FakeConsole:
     send_command = RoverConsole.send_command
     publish_active_target = RoverConsole.publish_active_target
+    update_mission_status = RoverConsole.update_mission_status
+    complete_arrived_waypoint = RoverConsole.complete_arrived_waypoint
 
-    def __init__(self, active_target, frame_available=True):
+    def __init__(self, active_target, frame_available=True, next_waypoint=None):
         self.events = []
         self.mission_controller = FakeMissionController(
             active_target,
             frame_available,
+            next_waypoint,
         )
         self.feedback = FakeLabel()
+        self.target = FakeLabel()
+        self.nav_state = FakeLabel()
+        self.distance = FakeLabel()
+        self.banner = FakeLabel()
         self.mission_panel = FakeMissionPanel()
         self.command_publisher = FakePublisher(self.events)
         self.node = FakeNode(self.events)
         self.rover_track = FakeTrack(self.events)
         self.map_widget = FakeMapWidget(self.events)
+        self._last_mission_state = None
+        self._completing_arrival = False
 
 
 def test_start_without_active_waypoint_is_blocked():
@@ -186,3 +205,68 @@ def test_removing_active_waypoint_sends_target_cancellation():
 
     assert console.publish_active_target(None) is False
     assert console.events == [('command', 'CANCEL_TARGET')]
+
+
+def mission_status(state, has_target, distance_m):
+    """Build the JSON message published by the coordinate rover."""
+    return SimpleNamespace(
+        data=json.dumps({
+            'state': state,
+            'has_target': has_target,
+            'distance_m': distance_m,
+        })
+    )
+
+
+def test_authoritative_status_updates_navigation_labels():
+    active = SimpleNamespace(name='Sample Site')
+    console = FakeConsole(active_target=active)
+
+    console.update_mission_status(
+        mission_status('NAVIGATING', True, 8.42)
+    )
+
+    assert console.target.text == 'Target: Sample Site'
+    assert console.nav_state.text == 'State: NAVIGATING'
+    assert console.distance.text == 'Distance: 8.4 m'
+    assert console.banner.text == 'NAVIGATING — Sample Site'
+
+
+def test_arrival_completes_waypoint_only_once_for_repeated_status():
+    active = SimpleNamespace(name='Sample Site')
+    console = FakeConsole(active_target=active)
+    arrived = mission_status('ARRIVED', True, 0.75)
+
+    console.update_mission_status(arrived)
+    console.update_mission_status(arrived)
+
+    assert console.mission_controller.completed_count == 1
+    assert console.feedback.text == 'Reached Sample Site; mission complete.'
+
+
+def test_arrival_prepares_next_waypoint_without_starting_it():
+    active = SimpleNamespace(name='First Site')
+    next_waypoint = SimpleNamespace(name='Second Site')
+    console = FakeConsole(
+        active_target=active,
+        next_waypoint=next_waypoint,
+    )
+
+    console.update_mission_status(
+        mission_status('ARRIVED', True, 0.5)
+    )
+
+    assert console.mission_controller.active_target() is next_waypoint
+    assert 'Second Site is ready' in console.feedback.text
+    assert 'Press START to continue' in console.feedback.text
+
+
+def test_invalid_mission_status_does_not_change_navigation_labels():
+    console = FakeConsole(active_target=None)
+
+    console.update_mission_status(
+        mission_status('FLYING', False, -1.0)
+    )
+
+    assert console.nav_state.text == ''
+    assert console.feedback.text == 'INVALID MISSION STATUS MESSAGE'

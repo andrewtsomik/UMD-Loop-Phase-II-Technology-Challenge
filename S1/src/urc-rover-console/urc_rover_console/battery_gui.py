@@ -1,4 +1,5 @@
 import json
+import math
 import sys
 import time
 
@@ -37,6 +38,8 @@ class RoverConsole(QMainWindow):
         self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
         self.start_time = time.monotonic()
         self.rover_track = RoverTrack()
+        self._last_mission_state = None
+        self._completing_arrival = False
         origin = self.node.spawn_origin()
 
         if origin is None:
@@ -52,6 +55,8 @@ class RoverConsole(QMainWindow):
 
         self.subscription = node.create_subscription(
             String, "/rover/telemetry", self.update_telemetry, 10)
+        self.status_subscription = node.create_subscription(
+            String, "/mission/status", self.update_mission_status, 10)
         self.command_publisher = node.create_publisher(String, "/operator/command", 10)
 
         self.ros_timer = QTimer(self)
@@ -358,6 +363,11 @@ class RoverConsole(QMainWindow):
         active_waypoint = self.mission_controller.active_target()
 
         if active_waypoint is None:
+            # Completing the final waypoint deliberately leaves the simulator
+            # in ARRIVED so the success state remains visible. Other removals
+            # still cancel the rover's target immediately.
+            if self._completing_arrival:
+                return False
             cancel_message = String()
             cancel_message.data = "CANCEL_TARGET"
             self.command_publisher.publish(cancel_message)
@@ -454,6 +464,7 @@ class RoverConsole(QMainWindow):
         self.link.style().polish(self.link)
 
     def update_telemetry(self, message):
+        """Update diagnostics that are not owned by the navigation simulator."""
         self.telemetry_monitor.mark_received()
 
         try:
@@ -464,29 +475,94 @@ class RoverConsole(QMainWindow):
 
         try:
             nav = data["navigation"]
-
-            target = nav["target"]
-            state = nav["state"]
-            distance = nav["distance_m"]
             accuracy = nav["gnss_accuracy_m"]
         except (KeyError, TypeError):
             self.link.setText("INCOMPLETE TELEMETRY MESSAGE")
             return
 
-        self.target.setText(f"Target: {target}")
-        self.nav_state.setText(f"State: {state}")
-        self.distance.setText(f"Distance: {distance:.1f} m")
         self.accuracy.setText(f"GNSS accuracy: ±{accuracy:.1f} m")
+
+    def update_mission_status(self, message):
+        """Display the state produced by the node that actually moves the rover."""
+        valid_states = {
+            "IDLE",
+            "READY",
+            "NAVIGATING",
+            "STOPPED",
+            "ARRIVED",
+            "ABORTED",
+        }
+
+        try:
+            data = json.loads(message.data)
+            state = data["state"]
+            has_target = data["has_target"]
+            distance = data["distance_m"]
+            if state not in valid_states or not isinstance(has_target, bool):
+                raise ValueError("invalid state or target flag")
+            if distance is not None:
+                distance = float(distance)
+                if not math.isfinite(distance) or distance < 0.0:
+                    raise ValueError("invalid target distance")
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+            self.feedback.setText("INVALID MISSION STATUS MESSAGE")
+            return
+
+        active = self.mission_controller.active_target()
+        target_name = active.name if has_target and active is not None else "--"
+        self.target.setText(f"Target: {target_name}")
+        self.nav_state.setText(f"State: {state}")
+        self.distance.setText(
+            "Distance: --" if distance is None else f"Distance: {distance:.1f} m"
+        )
 
         if state == "ARRIVED":
             self.banner.setText("TARGET REACHED — ROVER STOPPED")
+        elif state == "READY":
+            self.banner.setText(f"READY — {target_name} — PRESS START")
         else:
-            self.banner.setText(f"{state} — {target}")
+            self.banner.setText(f"{state} — {target_name}")
 
-        if state in ("RETURNING", "ABORTED"):
-            self.feedback.setText(
-                "Rover acknowledged abort command"
+        # Status is published repeatedly. Only the transition into ARRIVED may
+        # modify the mission, otherwise the same waypoint would be completed
+        # again on every simulator tick.
+        entered_arrived = (
+            state == "ARRIVED" and self._last_mission_state != "ARRIVED"
+        )
+        self._last_mission_state = state
+        if entered_arrived:
+            self.complete_arrived_waypoint()
+
+        if state == "ABORTED":
+            self.feedback.setText("Rover acknowledged abort command")
+
+    def complete_arrived_waypoint(self):
+        """Complete one reached target and prepare, but do not start, the next."""
+        arrived = self.mission_controller.active_target()
+        if arrived is None:
+            return
+
+        self._completing_arrival = True
+        try:
+            next_waypoint = self.mission_controller.complete_active()
+        except USER_ERRORS as error:
+            self.mission_panel.report(
+                f"Reached target could not be completed: {error}",
+                ok=False,
             )
+            return
+        finally:
+            self._completing_arrival = False
+
+        if next_waypoint is None:
+            text = f"Reached {arrived.name}; mission complete."
+        else:
+            text = (
+                f"Reached {arrived.name}; {next_waypoint.name} is ready. "
+                f"Press START to continue."
+            )
+        self.feedback.setText(text)
+        self.mission_panel.report(text, ok=True)
 
 
 def main(args=None):
