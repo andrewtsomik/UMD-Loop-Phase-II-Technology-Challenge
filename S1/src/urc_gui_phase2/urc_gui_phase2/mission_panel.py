@@ -21,8 +21,8 @@ _STATUS_MARK = {Status.PENDING: ' ', Status.ACTIVE: '>', Status.DONE: 'x'}
 USER_ERRORS = (InvalidCoordinateError, LookupError, IndexError, ValueError, OSError)
 
 
-ADD_MODE_OFF_TEXT = 'Add waypoint on click'
-ADD_MODE_ON_TEXT = 'Click the map to place a waypoint  (click here to cancel)'
+ADD_MODE_OFF_TEXT = 'ADD WAYPOINT ON MAP'
+ADD_MODE_ON_TEXT = 'CLICK MAP TO PLACE - CLICK TO CANCEL'
 _ADD_MODE_OFF_STYLE = ''
 _ADD_MODE_ON_STYLE = ('QPushButton { background: #ff9800; color: #000000; font-weight: bold; '
                       'border: 2px solid #e65100; padding: 4px; }')

@@ -19,7 +19,12 @@ from PyQt5.QtWidgets import (
 from urc_rover_console.telemetry_monitor import TelemetryMonitor
 from urc_gui_phase2.map_widget import OfflineMapWidget
 from urc_gui_phase2.mission_controller import MissionController
-from urc_gui_phase2.mission_panel import MissionPanel
+from urc_gui_phase2.mission_model import TargetType
+from urc_gui_phase2.mission_panel import (
+    ADD_MODE_OFF_TEXT,
+    USER_ERRORS,
+    MissionPanel,
+)
 
 
 class RoverConsole(QMainWindow):
@@ -240,9 +245,50 @@ class RoverConsole(QMainWindow):
         self.map_widget.selectionChanged.connect(
             self.on_map_selection
         )
+        self.map_widget.mapClickedForNewWaypoint.connect(
+            self.on_map_click_add
+        )
+
+        self.mission_panel.addModeChanged.connect(
+            self.map_widget.set_crosshair_cursor
+        )
 
         self.refresh_map_waypoints()
 
+    def on_map_click_add(self, latitude, longitude):
+        """Create a GNSS waypoint from an armed map click."""
+
+        if not self.mission_panel.add_mode:
+            self.mission_panel.report(
+                f"Not adding a waypoint: press "
+                f"'{ADD_MODE_OFF_TEXT}' first.",
+                ok=None,
+            )
+            return
+
+        try:
+            waypoint = self.mission_controller.add_waypoint(
+                self.mission_controller.default_waypoint_name(),
+                latitude,
+                longitude,
+                TargetType.GNSS,
+            )
+        except USER_ERRORS as error:
+            self.mission_panel.report(
+                f"Waypoint not added at "
+                f"{latitude:.6f}, {longitude:.6f}: {error}",
+                ok=False,
+            )
+            return
+
+        self.mission_panel.set_add_mode(False)
+        self.mission_controller.select(waypoint.id)
+
+        self.mission_panel.report(
+            f"Added {waypoint.name} at "
+            f"{latitude:.6f}, {longitude:.6f}",
+            ok=True,
+        )
     def refresh_map_waypoints(self):
         """Redraw map markers using the current mission."""
 
