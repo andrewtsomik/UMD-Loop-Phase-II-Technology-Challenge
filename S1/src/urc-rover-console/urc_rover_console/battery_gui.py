@@ -17,6 +17,9 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 from urc_rover_console.telemetry_monitor import TelemetryMonitor
+from urc_gui_phase2.map_widget import OfflineMapWidget
+from urc_gui_phase2.mission_controller import MissionController
+from urc_gui_phase2.mission_panel import MissionPanel
 
 
 class RoverConsole(QMainWindow):
@@ -26,6 +29,7 @@ class RoverConsole(QMainWindow):
         self.node = node
         self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
         self.start_time = time.monotonic()
+        self.mission_controller = MissionController()
         self.setWindowTitle("URC Autonomous Navigation Rover Operations Console")
         self.resize(1500, 900)
         self.build_ui()
@@ -89,16 +93,24 @@ class RoverConsole(QMainWindow):
 
         root.addLayout(status_row)
 
-        # Temporary location for the Phase II map and mission editor
-        self.integration_area = QLabel(
-            "OFFLINE MAP AND MISSION EDITOR\n"
-            "will be integrated here"
-        )
-        self.integration_area.setObjectName("integration_area")
-        self.integration_area.setAlignment(Qt.AlignCenter)
-        self.integration_area.setMinimumHeight(550)
+        # Phase II map and mission editor
+        integration_area = QWidget()
+        integration_layout = QHBoxLayout(integration_area)
+        integration_layout.setContentsMargins(0, 0, 0, 0)
 
-        root.addWidget(self.integration_area, 1)
+        self.map_widget = OfflineMapWidget()
+
+        self.mission_panel = MissionPanel(
+            self.mission_controller
+        )
+        self.mission_panel.setFixedWidth(420)
+
+        integration_layout.addWidget(self.map_widget, 1)
+        integration_layout.addWidget(self.mission_panel)
+
+        root.addWidget(integration_area, 1)
+
+        self.connect_mission_components()
 
         # Mission controls
         commands = QHBoxLayout()
@@ -213,6 +225,43 @@ class RoverConsole(QMainWindow):
                 background: #b91c1c;
             }
         """)
+
+    def connect_mission_components(self):
+        """Connect the mission controller to the map."""
+
+        self.mission_controller.missionChanged.connect(
+            self.refresh_map_waypoints
+        )
+
+        self.mission_controller.selectionChanged.connect(
+            self.on_controller_selection
+        )
+
+        self.map_widget.selectionChanged.connect(
+            self.on_map_selection
+        )
+
+        self.refresh_map_waypoints()
+
+    def refresh_map_waypoints(self):
+        """Redraw map markers using the current mission."""
+
+        self.map_widget.set_waypoints(
+            self.mission_controller.model
+        )
+
+    def on_map_selection(self, waypoint_id):
+        """Select a waypoint when its map marker is clicked."""
+
+        if waypoint_id != self.mission_controller.selected_id:
+            self.mission_controller.select(waypoint_id)
+
+    def on_controller_selection(self, waypoint_id):
+        """Highlight the selected mission waypoint on the map."""
+
+        if waypoint_id != self.map_widget.selected_waypoint_id:
+            self.map_widget.select_waypoint(waypoint_id)
+
     def send_command(self, command):
         message = String(); message.data = command
         self.command_publisher.publish(message)
