@@ -11,9 +11,9 @@ class RoverSimulator(Node):
         super().__init__("rover_simulator")
 
         self.battery_percentage = 100.0
-        self.navigation_state = "NAVIGATING"
-        self.current_target = "GNSS Target 1"
-        self.distance_to_target = 24.0
+        self.navigation_state = "IDLE"
+        self.current_target = "--"
+        self.distance_to_target = 0.0
         self.completed_targets = 0
         self.tick = 0
 
@@ -166,22 +166,49 @@ class RoverSimulator(Node):
             self.battery_percentage = 100.0
 
     def receive_command(self, message):
-        self.get_logger().info(
-            f"Command received: {message.data}"
-        )
-
-        if message.data == "ABORT_MISSION":
-            self.navigation_state = "RETURNING"
-            self.distance_to_target = 15.0
-            self.get_logger().warning(
-                "Attempt aborted. Returning to previous target."
+        """Mirror operator commands in the dashboard telemetry state."""
+        if message.data == "START_MISSION":
+            # STOP is a pause: retain the remaining distance on resume. Other
+            # terminal states represent a fresh simulated navigation attempt.
+            if not (
+                self.navigation_state == "STOPPED"
+                and self.distance_to_target > 0.0
+            ):
+                self.distance_to_target = 24.0
+            self.navigation_state = "NAVIGATING"
+            self.current_target = "Active GNSS waypoint"
+            self.get_logger().info(
+                "Navigation started"
             )
 
-        elif message.data == "START_MISSION":
-            self.navigation_state = "NAVIGATING"
-            self.distance_to_target = 24.0
+        elif message.data == "STOP_MISSION":
+            self.navigation_state = "STOPPED"
             self.get_logger().info(
-                "Navigation to the next target started."
+                "Navigation stopped; target retained"
+            )
+
+        elif message.data == "ABORT_MISSION":
+            self.navigation_state = "ABORTED"
+            self.current_target = "--"
+            self.distance_to_target = 0.0
+            self.get_logger().warning(
+                "Mission aborted; target cleared"
+            )
+
+        elif message.data == "RESET_MISSION":
+            self.navigation_state = "IDLE"
+            self.current_target = "--"
+            self.distance_to_target = 0.0
+            self.get_logger().info(
+                "Mission state reset"
+            )
+
+        elif message.data == "CANCEL_TARGET":
+            self.navigation_state = "IDLE"
+            self.current_target = "--"
+            self.distance_to_target = 0.0
+            self.get_logger().info(
+                "Active target removed"
             )
 
 

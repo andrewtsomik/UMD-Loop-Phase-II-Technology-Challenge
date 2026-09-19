@@ -3,7 +3,6 @@ import sys
 import time
 
 import rclpy
-from rclpy.node import Node
 from std_msgs.msg import String
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import (
@@ -25,6 +24,8 @@ from urc_gui_phase2.mission_panel import (
     USER_ERRORS,
     MissionPanel,
 )
+from urc_gui_phase2.coordinate_convert import LocalFrame
+from urc_gui_phase2.operator_gui_node import OperatorGuiNode
 
 
 class RoverConsole(QMainWindow):
@@ -34,10 +35,18 @@ class RoverConsole(QMainWindow):
         self.node = node
         self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
         self.start_time = time.monotonic()
-        self.mission_controller = MissionController()
+        origin = self.node.spawn_origin()
+
+        if origin is None:
+            frame = None
+        else:
+            frame = LocalFrame(*origin)
+
+        self.mission_controller = MissionController(frame=frame)
         self.setWindowTitle("URC Autonomous Navigation Rover Operations Console")
         self.resize(1500, 900)
         self.build_ui()
+        self.node.on_fix = self.on_rover_fix
 
         self.subscription = node.create_subscription(
             String, "/rover/telemetry", self.update_telemetry, 10)
@@ -253,6 +262,22 @@ class RoverConsole(QMainWindow):
             self.map_widget.set_crosshair_cursor
         )
 
+        self.mission_controller.roverMoved.connect(
+            self.map_widget.set_rover_position
+        )
+
+        self.mission_controller.frameChanged.connect(
+            self.map_widget.set_local_frame
+        )
+
+        self.mission_controller.activeTargetChanged.connect(
+            self.publish_active_target
+        )
+
+        if self.mission_controller.frame is not None:
+            self.map_widget.set_local_frame(
+                self.mission_controller.frame
+            )
         self.refresh_map_waypoints()
 
     def on_map_click_add(self, latitude, longitude):
@@ -289,6 +314,54 @@ class RoverConsole(QMainWindow):
             f"{latitude:.6f}, {longitude:.6f}",
             ok=True,
         )
+
+    def on_rover_fix(self, latitude, longitude):
+        """Process a valid WGS 84 position received from the rover."""
+
+        if self.mission_controller.frame is None:
+            self.mission_controller.set_frame(
+                LocalFrame(latitude, longitude)
+            )
+
+        self.mission_controller.set_rover_fix(
+            latitude,
+            longitude,
+        )
+
+    def publish_active_target(self, _waypoint):
+        """Publish the active target in the local REP 103 frame."""
+
+        active_waypoint = self.mission_controller.active_target()
+
+        if active_waypoint is None:
+            cancel_message = String()
+            cancel_message.data = "CANCEL_TARGET"
+            self.command_publisher.publish(cancel_message)
+            return False
+
+        if self.mission_controller.frame is None:
+            self.mission_panel.report(
+                "Target cannot be sent until a rover position establishes "
+                "the local coordinate frame.",
+                ok=False,
+            )
+            return False
+
+        try:
+            target = self.mission_controller.active_target_enu()
+        except USER_ERRORS as error:
+            self.mission_panel.report(
+                f"Target could not be converted: {error}",
+                ok=False,
+            )
+            return False
+
+        self.node.publish_active_target(
+            target.east_m,
+            target.north_m,
+        )
+        return True
+
     def refresh_map_waypoints(self):
         """Redraw map markers using the current mission."""
 
@@ -309,9 +382,26 @@ class RoverConsole(QMainWindow):
             self.map_widget.select_waypoint(waypoint_id)
 
     def send_command(self, command):
-        message = String(); message.data = command
+        if command == "START_MISSION":
+            if self.mission_controller.active_target() is None:
+                text = "Start blocked: set an active waypoint first."
+                self.feedback.setText(text)
+                self.mission_panel.report(text, ok=False)
+                return False
+
+            if not self.publish_active_target(
+                self.mission_controller.active_target()
+            ):
+                self.feedback.setText(
+                    "Start blocked: active target could not be sent."
+                )
+                return False
+
+        message = String()
+        message.data = command
         self.command_publisher.publish(message)
         self.feedback.setText(f"Command sent: {command.replace('_', ' ')}")
+        return True
 
     def update_clock_and_link(self):
         elapsed = int(time.monotonic() - self.start_time)
@@ -370,7 +460,7 @@ class RoverConsole(QMainWindow):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = Node("rover_operations_console")
+    node = OperatorGuiNode()
     app = QApplication(sys.argv)
     window = RoverConsole(node); window.show()
     try:

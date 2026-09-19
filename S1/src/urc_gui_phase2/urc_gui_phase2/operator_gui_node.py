@@ -20,16 +20,17 @@ from geometry_msgs.msg import PoseStamped
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QWidget
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
 from rclpy._rclpy_pybind11 import RCLError  # rclpy does not re-export it
+from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix
 
 from urc_gui_phase2.coordinate_convert import LocalFrame
 from urc_gui_phase2.map_widget import OfflineMapWidget
 from urc_gui_phase2.mission_controller import MissionController
-from urc_gui_phase2.mission_model import TargetType
-from urc_gui_phase2.mission_panel import ADD_MODE_OFF_TEXT, USER_ERRORS, MissionPanel
+from urc_gui_phase2.mission_model import (
+    InvalidCoordinateError, TargetType, validate_coordinate)
+from urc_gui_phase2.mission_panel import ADD_MODE_OFF_TEXT, MissionPanel, USER_ERRORS
 
 SPIN_PERIOD_MS = 10
 # spin_once() runs at most one ready callback per call, so drain a bounded
@@ -63,6 +64,7 @@ class OperatorGuiNode(Node):
         self.create_subscription(NavSatFix, FIX_TOPIC, self._on_navsat, 10)
 
     def spawn_origin(self):
+        """Return the configured WGS 84 origin, or None when it is unset."""
         lat = self.get_parameter('spawn_lat_deg').value
         lon = self.get_parameter('spawn_lon_deg').value
         if math.isnan(lat) or math.isnan(lon):
@@ -73,6 +75,11 @@ class OperatorGuiNode(Node):
         # status < 0 is NO_FIX; NaN means the receiver has no solution.
         if msg.status.status < 0 or not (math.isfinite(msg.latitude)
                                          and math.isfinite(msg.longitude)):
+            return
+        try:
+            validate_coordinate(msg.latitude, msg.longitude)
+        except InvalidCoordinateError as exc:
+            self.get_logger().warning(f'Ignoring invalid NavSatFix: {exc}')
             return
         if self.on_fix is not None:
             self.on_fix(msg.latitude, msg.longitude)
@@ -145,10 +152,15 @@ class OperatorWindow(QMainWindow):
         click again; the rejection is reported, not raised.
         """
         if not self._panel.add_mode:
-            self._panel.report(f"Not adding a waypoint: press '{ADD_MODE_OFF_TEXT}' first.", ok=None)
+            self._panel.report(
+                f"Not adding a waypoint: press '{ADD_MODE_OFF_TEXT}' first.",
+                ok=None,
+            )
             return
         try:
-            wp = self._ctl.add_waypoint(self._ctl.default_waypoint_name(), lat, lon, TargetType.GNSS)
+            wp = self._ctl.add_waypoint(
+                self._ctl.default_waypoint_name(), lat, lon, TargetType.GNSS
+            )
         except USER_ERRORS as exc:  # InvalidCoordinateError, incl. FrameRangeError
             self._panel.report(f'Waypoint not added at {lat:.6f}, {lon:.6f}: {exc}', ok=False)
             return

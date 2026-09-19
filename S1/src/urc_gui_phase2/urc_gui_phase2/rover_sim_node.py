@@ -16,7 +16,7 @@ from geometry_msgs.msg import PoseStamped
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix, NavSatStatus
-
+from std_msgs.msg import String
 from urc_gui_phase2.coordinate_convert import LocalFrame
 
 PERIOD_S = 0.2
@@ -34,26 +34,105 @@ class RoverSimNode(Node):
         self._speed = float(self.get_parameter('speed_mps').value)
         self._east = self._north = 0.0
         self._target = None
+        self._motion_enabled = False
         self._frame = None
         if math.isnan(lat) or math.isnan(lon):
             self.get_logger().error('spawn_lat_deg/spawn_lon_deg not set; publishing nothing')
             return
+        if not math.isfinite(self._speed) or self._speed <= 0.0:
+            self.get_logger().error(
+                'speed_mps must be a positive finite number; publishing nothing'
+            )
+            return
         self._frame = LocalFrame(lat, lon)
         self._pub = self.create_publisher(NavSatFix, '/rover/fix', 10)
         self.create_subscription(PoseStamped, '/mission/active_target', self._on_target, 10)
+        self.create_subscription(
+            String,
+            '/operator/command',
+            self._on_command,
+            10,
+        )
         self.create_timer(PERIOD_S, self._tick)
 
     def _on_target(self, msg: PoseStamped) -> None:
-        self._target = (msg.pose.position.x, msg.pose.position.y)
+        """Store a destination without automatically starting motion."""
+        if msg.header.frame_id != 'map':
+            self.get_logger().warning(
+                f'Ignoring target in unexpected frame '
+                f'{msg.header.frame_id!r}'
+            )
+            return
+
+        east_m = msg.pose.position.x
+        north_m = msg.pose.position.y
+        if not (math.isfinite(east_m) and math.isfinite(north_m)):
+            self.get_logger().warning(
+                'Ignoring target with non-finite map coordinates'
+            )
+            return
+
+        self._target = (east_m, north_m)
+
+        self.get_logger().info(
+            f'Target received: east={self._target[0]:.2f} m, '
+            f'north={self._target[1]:.2f} m'
+        )
+
+    def _on_command(self, msg: String) -> None:
+        """Apply an operator command to the rover's motion state."""
+        command = msg.data
+
+        if command == 'START_MISSION':
+            self._motion_enabled = True
+            self.get_logger().info('Motion enabled')
+
+        elif command == 'STOP_MISSION':
+            self._motion_enabled = False
+            self.get_logger().info(
+                'Rover stopped; target retained'
+            )
+
+        elif command == 'ABORT_MISSION':
+            self._motion_enabled = False
+            self._target = None
+            self.get_logger().warning(
+                'Mission aborted; target cleared'
+            )
+
+        elif command == 'RESET_MISSION':
+            self._motion_enabled = False
+            self._target = None
+            self._east = 0.0
+            self._north = 0.0
+            self.get_logger().info(
+                'Rover reset to spawn position'
+            )
+
+        elif command == 'CANCEL_TARGET':
+            self._motion_enabled = False
+            self._target = None
+            self.get_logger().info(
+                'Active target cancelled'
+            )
 
     def _tick(self) -> None:
-        if self._target is not None:
-            de, dn = self._target[0] - self._east, self._target[1] - self._north
+        if self._motion_enabled and self._target is not None:
+            de = self._target[0] - self._east
+            dn = self._target[1] - self._north
             dist = math.hypot(de, dn)
+
             if dist > ARRIVAL_RADIUS_M:
                 step = min(self._speed * PERIOD_S, dist)
                 self._east += de / dist * step
                 self._north += dn / dist * step
+            else:
+                self._motion_enabled = False
+                self.get_logger().info(
+                    'Target reached within '
+                    f'{ARRIVAL_RADIUS_M:.1f} m tolerance'
+                )
+
         geo = self._frame.to_wgs84(self._east, self._north)
         msg = NavSatFix()
         msg.header.stamp = self.get_clock().now().to_msg()
