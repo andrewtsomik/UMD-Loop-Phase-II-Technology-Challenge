@@ -170,14 +170,14 @@ class RoverSimulator(Node):
             f"Command received: {message.data}"
         )
 
-        if message.data == "ABORT_AND_RETURN":
+        if message.data == "ABORT_MISSION":
             self.navigation_state = "RETURNING"
             self.distance_to_target = 15.0
             self.get_logger().warning(
                 "Attempt aborted. Returning to previous target."
             )
 
-        elif message.data == "START_NEXT_TARGET":
+        elif message.data == "START_MISSION":
             self.navigation_state = "NAVIGATING"
             self.distance_to_target = 24.0
             self.get_logger().info(
