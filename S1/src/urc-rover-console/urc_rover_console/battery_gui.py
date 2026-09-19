@@ -8,6 +8,7 @@ from std_msgs.msg import String
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import (
     QApplication,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -16,6 +17,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from urc_rover_console.mission_event_log import MissionEventLog
 from urc_rover_console.telemetry_monitor import TelemetryMonitor
 from urc_gui_phase2.map_widget import OfflineMapWidget
 from urc_gui_phase2.mission_controller import MissionController
@@ -41,6 +43,7 @@ class RoverConsole(QMainWindow):
         self.fix_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
         self.status_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
         self.start_time = time.monotonic()
+        self.event_log = MissionEventLog()
         self.rover_track = RoverTrack()
         self._last_mission_state = None
         self._current_mission_state = "UNKNOWN"
@@ -54,6 +57,23 @@ class RoverConsole(QMainWindow):
             frame = LocalFrame(*origin)
 
         self.mission_controller = MissionController(frame=frame)
+        self.event_log.record(
+            "session",
+            "console_started",
+            spawn_lat_deg=None if origin is None else origin[0],
+            spawn_lon_deg=None if origin is None else origin[1],
+            stale_timeout_s=DATA_STALE_AFTER_S,
+        )
+        if origin is not None:
+            self.event_log.record(
+                "coordinate_conversion",
+                "spawn_wgs84_to_enu_origin",
+                latitude_deg=origin[0],
+                longitude_deg=origin[1],
+                east_m=0.0,
+                north_m=0.0,
+                frame_id="map",
+            )
         self.setWindowTitle("URC Autonomous Navigation Rover Operations Console")
         self.resize(1500, 900)
         self.build_ui()
@@ -154,6 +174,7 @@ class RoverConsole(QMainWindow):
         self.stop_button = QPushButton("STOP")
         self.abort_button = QPushButton("ABORT")
         self.reset_button = QPushButton("RESET")
+        self.export_log_button = QPushButton("EXPORT LOG")
 
         self.abort_button.setObjectName("danger")
 
@@ -169,12 +190,16 @@ class RoverConsole(QMainWindow):
         self.reset_button.clicked.connect(
             lambda: self.send_command("RESET_MISSION")
         )
+        self.export_log_button.clicked.connect(
+            self.export_mission_log
+        )
 
         commands.addWidget(self.feedback, 1)
         commands.addWidget(self.start_button)
         commands.addWidget(self.stop_button)
         commands.addWidget(self.abort_button)
         commands.addWidget(self.reset_button)
+        commands.addWidget(self.export_log_button)
 
         root.addLayout(commands)
 
@@ -272,6 +297,9 @@ class RoverConsole(QMainWindow):
         self.mission_controller.missionChanged.connect(
             self.refresh_map_waypoints
         )
+        self.mission_controller.missionChanged.connect(
+            self.record_mission_snapshot
+        )
 
         self.mission_controller.selectionChanged.connect(
             self.on_controller_selection
@@ -349,6 +377,15 @@ class RoverConsole(QMainWindow):
             self.mission_controller.set_frame(
                 LocalFrame(latitude, longitude)
             )
+            self.event_log.record(
+                "coordinate_conversion",
+                "gnss_fix_established_enu_origin",
+                latitude_deg=latitude,
+                longitude_deg=longitude,
+                east_m=0.0,
+                north_m=0.0,
+                frame_id="map",
+            )
 
         self.mission_controller.set_rover_fix(
             latitude,
@@ -414,6 +451,20 @@ class RoverConsole(QMainWindow):
             target.east_m,
             target.north_m,
         )
+        frame = self.mission_controller.frame
+        self.event_log.record(
+            "coordinate_conversion",
+            "target_wgs84_to_enu",
+            waypoint_id=active_waypoint.id,
+            waypoint_name=active_waypoint.name,
+            latitude_deg=active_waypoint.lat_deg,
+            longitude_deg=active_waypoint.lon_deg,
+            east_m=round(target.east_m, 3),
+            north_m=round(target.north_m, 3),
+            origin_lat_deg=frame.origin_lat_deg,
+            origin_lon_deg=frame.origin_lon_deg,
+            frame_id="map",
+        )
         return True
 
     def refresh_map_waypoints(self):
@@ -421,6 +472,28 @@ class RoverConsole(QMainWindow):
 
         self.map_widget.set_waypoints(
             self.mission_controller.model
+        )
+
+    def record_mission_snapshot(self):
+        """Record mission edits without coupling the logger to Qt widgets."""
+        waypoints = [
+            {
+                "id": waypoint.id,
+                "name": waypoint.name,
+                "latitude_deg": waypoint.lat_deg,
+                "longitude_deg": waypoint.lon_deg,
+                "target_type": waypoint.target_type.value,
+                "status": waypoint.status.value,
+            }
+            for waypoint in self.mission_controller.model
+        ]
+        active = self.mission_controller.active_target()
+        self.event_log.record(
+            "mission",
+            "waypoints_changed",
+            waypoint_count=len(waypoints),
+            active_waypoint_id=None if active is None else active.id,
+            waypoints=waypoints,
         )
 
     def on_map_selection(self, waypoint_id):
@@ -445,12 +518,24 @@ class RoverConsole(QMainWindow):
                 )
                 self.feedback.setText(text)
                 self.mission_panel.report(text, ok=False)
+                self.event_log.record(
+                    "operator_command",
+                    "blocked",
+                    command=command,
+                    reason=text,
+                )
                 return False
 
             if self.mission_controller.active_target() is None:
                 text = "Start blocked: set an active waypoint first."
                 self.feedback.setText(text)
                 self.mission_panel.report(text, ok=False)
+                self.event_log.record(
+                    "operator_command",
+                    "blocked",
+                    command=command,
+                    reason=text,
+                )
                 return False
 
             if not self.publish_active_target(
@@ -459,11 +544,22 @@ class RoverConsole(QMainWindow):
                 self.feedback.setText(
                     "Start blocked: active target could not be sent."
                 )
+                self.event_log.record(
+                    "operator_command",
+                    "blocked",
+                    command=command,
+                    reason="active target could not be sent",
+                )
                 return False
 
         message = String()
         message.data = command
         self.command_publisher.publish(message)
+        self.event_log.record(
+            "operator_command",
+            "sent",
+            command=command,
+        )
 
         if command == "RESET_MISSION":
             # STOP and ABORT preserve the track for review; RESET explicitly
@@ -554,6 +650,12 @@ class RoverConsole(QMainWindow):
         message.data = "STOP_MISSION"
         self.command_publisher.publish(message)
         self._safety_stop_sent = True
+        self.event_log.record(
+            "safety",
+            "automatic_stop_sent",
+            command="STOP_MISSION",
+            unavailable_streams=list(failures),
+        )
         self.feedback.setText(
             "Safety STOP sent because fresh "
             f"{', '.join(failures)} data became unavailable."
@@ -608,9 +710,26 @@ class RoverConsole(QMainWindow):
             return
 
         self.status_monitor.mark_received()
+        previous_state = self._current_mission_state
         self._current_mission_state = state
         active = self.mission_controller.active_target()
         target_name = active.name if has_target and active is not None else "--"
+        if state != previous_state:
+            self.event_log.record(
+                "mission",
+                "state_changed",
+                previous_state=previous_state,
+                state=state,
+                target_name=target_name,
+                distance_m=distance,
+            )
+            if state == "ABORTED" and active is not None:
+                self.event_log.record(
+                    "target_result",
+                    "aborted",
+                    waypoint_id=active.id,
+                    waypoint_name=active.name,
+                )
         self.target.setText(f"Target: {target_name}")
         self.nav_state.setText(f"State: {state}")
         self.distance.setText(
@@ -662,8 +781,51 @@ class RoverConsole(QMainWindow):
                 f"Reached {arrived.name}; {next_waypoint.name} is ready. "
                 f"Press START to continue."
             )
+        self.event_log.record(
+            "target_result",
+            "reached",
+            waypoint_id=arrived.id,
+            waypoint_name=arrived.name,
+            next_waypoint_id=(
+                None if next_waypoint is None else next_waypoint.id
+            ),
+        )
         self.feedback.setText(text)
         self.mission_panel.report(text, ok=True)
+
+    def export_mission_log(self):
+        """Let the operator export all recorded events as a portable CSV."""
+        path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Export mission log",
+            "mission_log.csv",
+            "CSV files (*.csv)",
+        )
+        if not path:
+            return False
+        if not path.lower().endswith(".csv"):
+            path += ".csv"
+
+        self.event_log.record(
+            "session",
+            "log_export_requested",
+            file_name=path.rsplit("/", 1)[-1],
+        )
+        try:
+            destination = self.event_log.export_csv(path)
+        except (OSError, ValueError) as error:
+            text = f"Mission log could not be exported: {error}"
+            self.feedback.setText(text)
+            self.mission_panel.report(text, ok=False)
+            return False
+
+        text = (
+            f"Exported {len(self.event_log.events)} mission-log events "
+            f"to {destination}"
+        )
+        self.feedback.setText(text)
+        self.mission_panel.report(text, ok=True)
+        return True
 
 
 def main(args=None):

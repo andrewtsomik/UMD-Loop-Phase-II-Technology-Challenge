@@ -78,6 +78,16 @@ class FakeMonitor:
         return self.state, age
 
 
+class FakeEventLog:
+    """Capture structured events separately from published ROS messages."""
+
+    def __init__(self):
+        self.events = []
+
+    def record(self, category, event, **details):
+        self.events.append((category, event, details))
+
+
 class FakeMissionPanel:
     def __init__(self):
         self.reports = []
@@ -91,7 +101,10 @@ class FakeMissionController:
         self._active_target = active_target
         self._next_waypoint = next_waypoint
         self.completed_count = 0
-        self.frame = object() if frame_available else None
+        self.frame = (
+            SimpleNamespace(origin_lat_deg=38.0, origin_lon_deg=-110.0)
+            if frame_available else None
+        )
 
     def active_target(self):
         return self._active_target
@@ -165,6 +178,7 @@ class FakeConsole:
         self.node = FakeNode(self.events)
         self.rover_track = FakeTrack(self.events)
         self.map_widget = FakeMapWidget(self.events)
+        self.event_log = FakeEventLog()
         self.fix_monitor = FakeMonitor()
         self.status_monitor = FakeMonitor()
         self.telemetry_monitor = FakeMonitor()
@@ -193,7 +207,12 @@ def test_start_is_blocked_when_critical_ros_data_is_missing():
 
 
 def test_start_publishes_target_before_movement_command():
-    waypoint = object()
+    waypoint = SimpleNamespace(
+        id='wp-1',
+        name='Sample Site',
+        lat_deg=38.1,
+        lon_deg=-110.1,
+    )
     console = FakeConsole(active_target=waypoint)
 
     assert console.send_command('START_MISSION') is True
@@ -252,7 +271,7 @@ def mission_status(state, has_target, distance_m):
 
 
 def test_authoritative_status_updates_navigation_labels():
-    active = SimpleNamespace(name='Sample Site')
+    active = SimpleNamespace(id='wp-1', name='Sample Site')
     console = FakeConsole(active_target=active)
 
     console.update_mission_status(
@@ -266,7 +285,7 @@ def test_authoritative_status_updates_navigation_labels():
 
 
 def test_arrival_completes_waypoint_only_once_for_repeated_status():
-    active = SimpleNamespace(name='Sample Site')
+    active = SimpleNamespace(id='wp-1', name='Sample Site')
     console = FakeConsole(active_target=active)
     arrived = mission_status('ARRIVED', True, 0.75)
 
@@ -278,8 +297,8 @@ def test_arrival_completes_waypoint_only_once_for_repeated_status():
 
 
 def test_arrival_prepares_next_waypoint_without_starting_it():
-    active = SimpleNamespace(name='First Site')
-    next_waypoint = SimpleNamespace(name='Second Site')
+    active = SimpleNamespace(id='wp-1', name='First Site')
+    next_waypoint = SimpleNamespace(id='wp-2', name='Second Site')
     console = FakeConsole(
         active_target=active,
         next_waypoint=next_waypoint,
