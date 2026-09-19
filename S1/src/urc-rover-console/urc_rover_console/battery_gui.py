@@ -29,17 +29,23 @@ from urc_gui_phase2.coordinate_convert import LocalFrame
 from urc_gui_phase2.operator_gui_node import OperatorGuiNode
 from urc_gui_phase2.rover_track import RoverTrack
 
+DATA_STALE_AFTER_S = 2.5
+
 
 class RoverConsole(QMainWindow):
 
     def __init__(self, node):
         super().__init__()
         self.node = node
-        self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
+        self.telemetry_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
+        self.fix_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
+        self.status_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
         self.start_time = time.monotonic()
         self.rover_track = RoverTrack()
         self._last_mission_state = None
+        self._current_mission_state = "UNKNOWN"
         self._completing_arrival = False
+        self._safety_stop_sent = False
         origin = self.node.spawn_origin()
 
         if origin is None:
@@ -139,6 +145,12 @@ class RoverConsole(QMainWindow):
         self.feedback = QLabel("No operator command sent")
 
         self.start_button = QPushButton("START")
+        # START remains unavailable until both safety-critical ROS streams have
+        # produced fresh data. STOP, ABORT, and RESET remain usable at all times.
+        self.start_button.setEnabled(False)
+        self.start_button.setToolTip(
+            "Waiting for fresh GNSS and mission-status data"
+        )
         self.stop_button = QPushButton("STOP")
         self.abort_button = QPushButton("ABORT")
         self.reset_button = QPushButton("RESET")
@@ -212,6 +224,13 @@ class RoverConsole(QMainWindow):
 
             QLabel#stale {
                 background: #b91c1c;
+                color: white;
+                padding: 9px;
+                font-weight: 700;
+            }
+
+            QLabel#degraded {
+                background: #b45309;
                 color: white;
                 padding: 9px;
                 font-weight: 700;
@@ -324,6 +343,7 @@ class RoverConsole(QMainWindow):
 
     def on_rover_fix(self, latitude, longitude):
         """Process a valid WGS 84 position received from the rover."""
+        self.fix_monitor.mark_received()
 
         if self.mission_controller.frame is None:
             self.mission_controller.set_frame(
@@ -417,6 +437,16 @@ class RoverConsole(QMainWindow):
 
     def send_command(self, command):
         if command == "START_MISSION":
+            failures = self.critical_data_failures()
+            if failures:
+                text = (
+                    "Start blocked: waiting for fresh "
+                    f"{', '.join(failures)} data."
+                )
+                self.feedback.setText(text)
+                self.mission_panel.report(text, ok=False)
+                return False
+
             if self.mission_controller.active_target() is None:
                 text = "Start blocked: set an active waypoint first."
                 self.feedback.setText(text)
@@ -448,25 +478,89 @@ class RoverConsole(QMainWindow):
         elapsed = int(time.monotonic() - self.start_time)
         self.clock.setText(f"{elapsed // 60:02d}:{elapsed % 60:02d}")
 
-        state, age = self.telemetry_monitor.connection_state()
+        streams = self.data_stream_states()
+        failures = self.critical_data_failures(streams)
+        diagnostics_state, diagnostics_age = streams["diagnostics"]
 
-        if state == "waiting":
-            self.link.setObjectName("waiting")
-            self.link.setText("WAITING FOR TELEMETRY")
-        elif state == "active":
-            self.link.setObjectName("active")
-            self.link.setText(f"LINK ACTIVE · {age:.1f}s")
+        if failures:
+            stale = [
+                name for name in failures
+                if streams[name][0] == "stale"
+            ]
+            self.link.setObjectName("stale" if stale else "waiting")
+            problem = "STALE" if stale else "MISSING"
+            self.link.setText(f"{problem}: {', '.join(failures).upper()}")
+        elif diagnostics_state != "active":
+            # Power/diagnostic loss is visible but does not invalidate fresh
+            # position and mission-state data used for autonomous motion.
+            self.link.setObjectName("degraded")
+            detail = (
+                f"{diagnostics_age:.1f}s"
+                if diagnostics_age is not None else "missing"
+            )
+            self.link.setText(f"NAV DATA ACTIVE · DIAGNOSTICS {detail}")
         else:
-            self.link.setObjectName("stale")
-            self.link.setText(f"TELEMETRY STALE · {age:.1f}s")
+            self.link.setObjectName("active")
+            self.link.setText("ROS DATA ACTIVE")
+
+        ready = not failures
+        self.start_button.setEnabled(ready)
+        self.start_button.setToolTip(
+            "" if ready else
+            f"Waiting for fresh {', '.join(failures)} data"
+        )
+
+        if failures:
+            failure_text = ", ".join(failures).upper()
+            if self._current_mission_state == "NAVIGATING":
+                self.send_safety_stop_once(failures)
+            if self._safety_stop_sent:
+                self.banner.setText(
+                    f"SAFETY STOP — {failure_text} DATA UNAVAILABLE"
+                )
+            else:
+                self.banner.setText(
+                    f"DATA UNAVAILABLE — {failure_text}"
+                )
+        else:
+            # A recovered stream permits one future safety stop if another
+            # distinct outage occurs.
+            self._safety_stop_sent = False
 
         self.link.style().unpolish(self.link)
         self.link.style().polish(self.link)
 
+    def data_stream_states(self):
+        """Return health for each ROS input used by the combined console."""
+        return {
+            "gnss": self.fix_monitor.connection_state(),
+            "mission status": self.status_monitor.connection_state(),
+            "diagnostics": self.telemetry_monitor.connection_state(),
+        }
+
+    def critical_data_failures(self, streams=None):
+        """List safety-critical streams that are missing or stale."""
+        streams = streams if streams is not None else self.data_stream_states()
+        return [
+            name for name in ("gnss", "mission status")
+            if streams[name][0] != "active"
+        ]
+
+    def send_safety_stop_once(self, failures):
+        """Request one fail-safe stop for the current critical-data outage."""
+        if self._safety_stop_sent:
+            return
+        message = String()
+        message.data = "STOP_MISSION"
+        self.command_publisher.publish(message)
+        self._safety_stop_sent = True
+        self.feedback.setText(
+            "Safety STOP sent because fresh "
+            f"{', '.join(failures)} data became unavailable."
+        )
+
     def update_telemetry(self, message):
         """Update diagnostics that are not owned by the navigation simulator."""
-        self.telemetry_monitor.mark_received()
-
         try:
             data = json.loads(message.data)
         except json.JSONDecodeError:
@@ -475,11 +569,16 @@ class RoverConsole(QMainWindow):
 
         try:
             nav = data["navigation"]
-            accuracy = nav["gnss_accuracy_m"]
-        except (KeyError, TypeError):
+            accuracy = float(nav["gnss_accuracy_m"])
+            if not math.isfinite(accuracy) or accuracy < 0.0:
+                raise ValueError("invalid GNSS accuracy")
+        except (KeyError, TypeError, ValueError):
             self.link.setText("INCOMPLETE TELEMETRY MESSAGE")
             return
 
+        # Invalid payloads do not refresh stream health; receiving bytes is
+        # not the same as receiving trustworthy diagnostic information.
+        self.telemetry_monitor.mark_received()
         self.accuracy.setText(f"GNSS accuracy: ±{accuracy:.1f} m")
 
     def update_mission_status(self, message):
@@ -508,6 +607,8 @@ class RoverConsole(QMainWindow):
             self.feedback.setText("INVALID MISSION STATUS MESSAGE")
             return
 
+        self.status_monitor.mark_received()
+        self._current_mission_state = state
         active = self.mission_controller.active_target()
         target_name = active.name if has_target and active is not None else "--"
         self.target.setText(f"Target: {target_name}")

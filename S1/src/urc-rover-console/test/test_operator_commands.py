@@ -62,6 +62,22 @@ class FakeLabel:
         self.text = text
 
 
+class FakeMonitor:
+    """Controllable replacement for the monotonic-time stream monitor."""
+
+    def __init__(self, state='active', age=0.0):
+        self.state = state
+        self.age = age
+
+    def mark_received(self):
+        self.state = 'active'
+        self.age = 0.0
+
+    def connection_state(self):
+        age = None if self.state == 'waiting' else self.age
+        return self.state, age
+
+
 class FakeMissionPanel:
     def __init__(self):
         self.reports = []
@@ -128,6 +144,9 @@ class FakeConsole:
     publish_active_target = RoverConsole.publish_active_target
     update_mission_status = RoverConsole.update_mission_status
     complete_arrived_waypoint = RoverConsole.complete_arrived_waypoint
+    data_stream_states = RoverConsole.data_stream_states
+    critical_data_failures = RoverConsole.critical_data_failures
+    send_safety_stop_once = RoverConsole.send_safety_stop_once
 
     def __init__(self, active_target, frame_available=True, next_waypoint=None):
         self.events = []
@@ -146,8 +165,13 @@ class FakeConsole:
         self.node = FakeNode(self.events)
         self.rover_track = FakeTrack(self.events)
         self.map_widget = FakeMapWidget(self.events)
+        self.fix_monitor = FakeMonitor()
+        self.status_monitor = FakeMonitor()
+        self.telemetry_monitor = FakeMonitor()
         self._last_mission_state = None
+        self._current_mission_state = 'IDLE'
         self._completing_arrival = False
+        self._safety_stop_sent = False
 
 
 def test_start_without_active_waypoint_is_blocked():
@@ -157,6 +181,15 @@ def test_start_without_active_waypoint_is_blocked():
     assert console.events == []
     assert 'set an active waypoint' in console.feedback.text
     assert console.mission_panel.reports[-1][1] is False
+
+
+def test_start_is_blocked_when_critical_ros_data_is_missing():
+    console = FakeConsole(active_target=object())
+    console.fix_monitor.state = 'waiting'
+
+    assert console.send_command('START_MISSION') is False
+    assert console.events == []
+    assert 'fresh gnss data' in console.feedback.text
 
 
 def test_start_publishes_target_before_movement_command():
@@ -270,3 +303,13 @@ def test_invalid_mission_status_does_not_change_navigation_labels():
 
     assert console.nav_state.text == ''
     assert console.feedback.text == 'INVALID MISSION STATUS MESSAGE'
+
+
+def test_safety_stop_is_sent_only_once_for_one_outage():
+    console = FakeConsole(active_target=object())
+
+    console.send_safety_stop_once(['gnss'])
+    console.send_safety_stop_once(['gnss'])
+
+    assert console.events == [('command', 'STOP_MISSION')]
+    assert 'fresh gnss data became unavailable' in console.feedback.text
