@@ -1,5 +1,6 @@
 """Widget tests run a real QtWebEngine page offscreen (no display needed)."""
 import json
+import math
 import os
 import time
 
@@ -15,7 +16,8 @@ from PyQt5.QtTest import QTest  # noqa: E402
 from PyQt5.QtWidgets import QApplication  # noqa: E402
 
 from urc_gui_phase2.coordinate_convert import LocalFrame  # noqa: E402
-from urc_gui_phase2.map_geometry import bbox_around, meters_per_pixel, tiles_for_bbox  # noqa: E402
+from urc_gui_phase2.map_geometry import (  # noqa: E402
+    _mercator_pixels, bbox_around, meters_per_pixel, tile_bounds, tiles_for_bbox)
 from urc_gui_phase2.map_widget import OfflineMapWidget  # noqa: E402
 from urc_gui_phase2.mission_model import MissionModel, Status  # noqa: E402
 
@@ -98,8 +100,9 @@ def test_interceptor_actually_blocks_network_requests(widget):
 def test_click_selects_nearest_waypoint_within_threshold(widget, mission):
     widget.set_waypoints(mission.waypoints)
     alpha, bravo = mission.waypoints
-    seen = []
+    seen, added = [], []
     widget.selectionChanged.connect(seen.append)
+    widget.mapClickedForNewWaypoint.connect(lambda lat, lon: added.append((lat, lon)))
     zoom = js(widget, 'map.getZoom()')
     px = meters_per_pixel(MDRS[0], zoom) / 111_320  # degrees of latitude per pixel
 
@@ -107,9 +110,12 @@ def test_click_selects_nearest_waypoint_within_threshold(widget, mission):
     assert wait_for(lambda: widget.selected_waypoint_id == alpha.id)
     fire_click(widget, bravo.lat_deg, bravo.lon_deg + 1e-6)           # on Bravo
     assert wait_for(lambda: widget.selected_waypoint_id == bravo.id)
-    fire_click(widget, alpha.lat_deg + 200 * px, alpha.lon_deg)       # empty map -> clears
-    assert wait_for(lambda: widget.selected_waypoint_id is None)
-    assert seen == [alpha.id, bravo.id, None]
+    assert added == []                                                # hits never propose an add
+    fire_click(widget, alpha.lat_deg + 200 * px, alpha.lon_deg)       # empty map -> add request
+    assert wait_for(lambda: len(added) == 1)
+    assert widget.selected_waypoint_id == bravo.id                    # selection untouched
+    assert seen == [alpha.id, bravo.id]
+    widget.select_waypoint(None)
 
 
 def test_programmatic_select_and_unknown_id(widget, mission):
@@ -164,3 +170,105 @@ def test_marker_outside_coverage_is_flagged_in_banner(widget, mission):
     assert '1 marker(s) lie outside' in widget._banner.text()
     widget.clear_rover()
     assert 'Offline map' in widget._banner.text()
+
+
+# -- click on empty map -> mapClickedForNewWaypoint ---------------------------------------------
+
+def dom_click(widget, dx, dy):
+    """A real DOM click about `dx` px right / `dy` px down of the map container's centre.
+
+    Unlike fire_click, this goes through Leaflet's own pixel -> lat/lon conversion, which is the
+    conversion that decides where a new waypoint lands on the ground. MouseEvent coordinates are
+    integers, so it returns the offset (from the exact centre) that was really clicked.
+    """
+    return js(widget,
+              '(function() { var c = map.getContainer(), r = c.getBoundingClientRect(),'
+              ' s = map.getSize(), x = Math.round(r.left + s.x / 2 + ' + str(dx) + '),'
+              ' y = Math.round(r.top + s.y / 2 + ' + str(dy) + ');'
+              ' c.dispatchEvent(new MouseEvent("click", {bubbles: true, clientX: x, clientY: y}));'
+              ' return [x - r.left - s.x / 2, y - r.top - s.y / 2]; })()')
+
+
+def latlon_from_world_pixels(px, py, zoom):
+    """Independent inverse Web Mercator (the standard slippy-map formulas)."""
+    scale = 256 * 2.0 ** zoom
+    lon = px / scale * 360.0 - 180.0
+    lat = math.degrees(math.atan(math.sinh(math.pi * (1.0 - 2.0 * py / scale))))
+    return lat, lon
+
+
+def collect_adds(widget):
+    added = []
+    widget.mapClickedForNewWaypoint.connect(lambda lat, lon: added.append((lat, lon)))
+    return added
+
+
+def test_independent_inverse_matches_library_forward_and_tile_corners():
+    # Guards the reference used below: it must invert map_geometry's forward transform
+    # and reproduce the known corners of a real tile exactly.
+    for z in (12, 15, 17):
+        px, py = _mercator_pixels(*MDRS, z)
+        lat, lon = latlon_from_world_pixels(px, py, z)
+        assert (lat, lon) == pytest.approx(MDRS, abs=1e-9)
+    south, west, north, east = tile_bounds(6299, 12592, 15)  # the tile holding MDRS at z15
+    lat, lon = latlon_from_world_pixels(6299 * 256, 12592 * 256, 15)
+    assert (lat, lon) == pytest.approx((north, west), abs=1e-9)
+    lat, lon = latlon_from_world_pixels(6300 * 256, 12593 * 256, 15)
+    assert (lat, lon) == pytest.approx((south, east), abs=1e-9)
+
+
+def test_click_at_map_centre_reports_the_known_centre_point(widget):
+    widget.set_waypoints([])
+    js(widget, f'map.setView([{MDRS[0]}, {MDRS[1]}], 15, {{animate: false}}); 1')
+    added = collect_adds(widget)
+    adx, ady = dom_click(widget, 0, 0)
+    assert wait_for(lambda: added)
+    # Known point: the map was centred on MDRS. Leaflet snaps its pixel origin to whole pixels,
+    # so its centre can be up to half a pixel from the requested one; anything larger is a bug.
+    half_pixel_deg = 0.5 * meters_per_pixel(MDRS[0], 15) / 111_320 * 1.01
+    assert added[0][0] == pytest.approx(MDRS[0], abs=half_pixel_deg + 1e-9)
+    assert added[0][1] == pytest.approx(MDRS[1], abs=half_pixel_deg / math.cos(math.radians(MDRS[0])))
+    # Precisely: the click equals independent math from Leaflet's actual centre and clicked pixel.
+    c = js(widget, 'map.getCenter()')
+    cx, cy = _mercator_pixels(c['lat'], c['lng'], 15)
+    assert added[0] == pytest.approx(latlon_from_world_pixels(cx + adx, cy + ady, 15), abs=1e-7)
+
+
+@pytest.mark.parametrize('dx,dy', [(120, -80), (-300, 200), (250, 240), (-5, -5)])
+def test_click_pixel_converts_to_the_same_lat_lon_as_independent_mercator_math(widget, dx, dy):
+    widget.set_waypoints([])
+    added = collect_adds(widget)
+    zoom = js(widget, 'map.getZoom()')
+    c = js(widget, 'map.getCenter()')
+    cx, cy = _mercator_pixels(c['lat'], c['lng'], zoom)
+    adx, ady = dom_click(widget, dx, dy)
+    assert wait_for(lambda: added)
+    expected = latlon_from_world_pixels(cx + adx, cy + ady, zoom)
+    assert added[0] == pytest.approx(expected, abs=1e-7)   # 1e-7 deg ~ 1 cm
+
+
+def test_click_offset_is_the_right_number_of_metres_on_the_ground(widget):
+    """Pixels -> lat/lon -> LocalFrame ENU, checked against ground metres per pixel."""
+    widget.set_waypoints([])
+    added = collect_adds(widget)
+    zoom = js(widget, 'map.getZoom()')
+    c = js(widget, 'map.getCenter()')
+    frame = LocalFrame(c['lat'], c['lng'])
+    adx, ady = dom_click(widget, 200, -150)   # about 200 px east, 150 px north of the centre
+    assert wait_for(lambda: added)
+    enu = frame.to_enu(*added[0])
+    mpp = meters_per_pixel(c['lat'], zoom)
+    # UTM (ellipsoid) vs Web Mercator (sphere) differ by well under 1% at this scale.
+    assert enu.east_m == pytest.approx(adx * mpp, rel=0.01)
+    assert enu.north_m == pytest.approx(-ady * mpp, rel=0.01)
+
+
+def test_click_on_empty_map_does_not_touch_selection_or_emit_selection(widget, mission):
+    widget.set_waypoints(mission.waypoints)
+    widget.select_waypoint(mission.waypoints[0].id)
+    added, seen = collect_adds(widget), []
+    widget.selectionChanged.connect(seen.append)
+    dom_click(widget, 300, 200)           # far from both waypoints
+    assert wait_for(lambda: added)
+    assert widget.selected_waypoint_id == mission.waypoints[0].id and seen == []
+    widget.select_waypoint(None)

@@ -84,3 +84,12 @@ def test_default_tile_dir_env_override(monkeypatch):
     assert default_tile_dir() == '/somewhere'
     monkeypatch.delenv(ENV_TILE_DIR)
     assert default_tile_dir().endswith(os.path.join('tiles', 'mdrs'))
+
+
+def test_default_tile_dir_prefers_installed_share(monkeypatch, tmp_path):
+    from urc_gui_phase2 import offline_tiles
+    monkeypatch.delenv(ENV_TILE_DIR, raising=False)
+    monkeypatch.setattr(offline_tiles, '_installed_tile_dir', lambda: str(tmp_path))
+    assert default_tile_dir() == str(tmp_path)
+    monkeypatch.setattr(offline_tiles, '_installed_tile_dir', lambda: None)
+    assert default_tile_dir().endswith(os.path.join('tiles', 'mdrs'))

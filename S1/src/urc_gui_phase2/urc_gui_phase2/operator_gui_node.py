@@ -21,13 +21,15 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QWidget
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
+from rclpy._rclpy_pybind11 import RCLError  # rclpy does not re-export it
 from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix
 
 from urc_gui_phase2.coordinate_convert import LocalFrame
 from urc_gui_phase2.map_widget import OfflineMapWidget
 from urc_gui_phase2.mission_controller import MissionController
-from urc_gui_phase2.mission_panel import MissionPanel
+from urc_gui_phase2.mission_model import TargetType
+from urc_gui_phase2.mission_panel import ADD_MODE_OFF_TEXT, USER_ERRORS, MissionPanel
 
 SPIN_PERIOD_MS = 10
 # spin_once() runs at most one ready callback per call, so drain a bounded
@@ -111,6 +113,10 @@ class OperatorWindow(QMainWindow):
         controller.selectionChanged.connect(self._on_controller_selection)
         # map -> controller (a map click selects; panel and map stay in step)
         self._map.selectionChanged.connect(self._on_map_selection)
+        # a click on empty map proposes a new waypoint, but only while the panel's add mode is
+        # armed; the controller validates it. Add mode also drives the map cursor.
+        self._map.mapClickedForNewWaypoint.connect(self._on_map_click_add)
+        self._panel.addModeChanged.connect(self._map.set_crosshair_cursor)
         # controller -> ROS
         controller.activeTargetChanged.connect(self._publish_target)
         controller.frameChanged.connect(lambda _f: self._publish_target(None))
@@ -130,6 +136,25 @@ class OperatorWindow(QMainWindow):
     def _on_map_selection(self, wp_id) -> None:
         if wp_id != self._ctl.selected_id:
             self._ctl.select(wp_id)
+
+    def _on_map_click_add(self, lat: float, lon: float) -> None:
+        """Add a GNSS waypoint where the map was clicked, if add mode is armed.
+
+        Add mode is one-shot: it turns itself off after a successful add, so a second stray
+        click cannot place another waypoint. A rejected add keeps it armed so the operator can
+        click again; the rejection is reported, not raised.
+        """
+        if not self._panel.add_mode:
+            self._panel.report(f"Not adding a waypoint: press '{ADD_MODE_OFF_TEXT}' first.", ok=None)
+            return
+        try:
+            wp = self._ctl.add_waypoint(self._ctl.default_waypoint_name(), lat, lon, TargetType.GNSS)
+        except USER_ERRORS as exc:  # InvalidCoordinateError, incl. FrameRangeError
+            self._panel.report(f'Waypoint not added at {lat:.6f}, {lon:.6f}: {exc}', ok=False)
+            return
+        self._panel.set_add_mode(False)
+        self._ctl.select(wp.id)
+        self._panel.report(f'Added {wp.name} at {lat:.6f}, {lon:.6f}', ok=True)
 
     def _on_controller_selection(self, wp_id) -> None:
         if wp_id != self._map.selected_waypoint_id:
@@ -153,9 +178,18 @@ def main():
     executor = SingleThreadedExecutor()
     executor.add_node(node)
 
+    # A timer event already queued when exec_() returns can still fire after timer.stop();
+    # this flag keeps it from calling into a ROS context that is being shut down.
+    shutting_down = False
+
     def spin_ros():
-        for _ in range(MAX_SPINS_PER_TICK):
-            executor.spin_once(timeout_sec=0)
+        if shutting_down:
+            return
+        try:
+            for _ in range(MAX_SPINS_PER_TICK):
+                executor.spin_once(timeout_sec=0)
+        except RCLError:
+            return  # context already gone (shutdown race); nothing left to spin
 
     timer = QTimer()
     timer.timeout.connect(spin_ros)
@@ -169,6 +203,7 @@ def main():
     exit_code = app.exec_()
 
     # No spin thread to join: stop the timer, then tear ROS down in order.
+    shutting_down = True
     timer.stop()
     executor.shutdown()
     node.destroy_node()

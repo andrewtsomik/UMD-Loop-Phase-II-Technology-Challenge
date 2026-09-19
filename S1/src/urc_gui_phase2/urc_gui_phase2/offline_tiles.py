@@ -1,7 +1,7 @@
 """Offline tile source and the no-network policy. Pure Python: no Qt, no ROS.
 
 Tiles live on disk as a standard XYZ pyramid, <root>/{z}/{x}/{y}.png, written
-once by tools/tile_downloader.py on a networked machine. This module reads
+once by tools/build_offline_tiles.sh on a networked machine. This module reads
 that directory and hands the map widget a file:// URL template. It never
 opens a socket.
 
@@ -47,16 +47,33 @@ def is_local_url(url: str) -> bool:
     return True
 
 
-def default_tile_dir() -> str:
-    """$URC_TILE_DIR if set, else <package repo>/tiles/mdrs.
+def _installed_tile_dir() -> Optional[str]:
+    """share/urc_gui_phase2/tiles/mdrs of the installed package, if it exists."""
+    try:
+        from ament_index_python.packages import (
+            PackageNotFoundError, get_package_share_directory)
+    except ImportError:  # pure-Python use without ROS
+        return None
+    try:
+        path = os.path.join(get_package_share_directory('urc_gui_phase2'), 'tiles', 'mdrs')
+    except PackageNotFoundError:
+        return None
+    return path if os.path.isdir(path) else None
 
-    The fallback resolves relative to this source file, so it works from a
-    checkout or a `colcon build --symlink-install` tree. For a copied install,
-    set URC_TILE_DIR or pass the directory to the widget explicitly.
+
+def default_tile_dir() -> str:
+    """$URC_TILE_DIR, else the installed share/urc_gui_phase2/tiles/mdrs, else <package repo>/tiles/mdrs.
+
+    The share directory is where setup.py installs the tiles (colcon build, with or
+    without --symlink-install). The last fallback resolves relative to this source
+    file, for running straight from a checkout without installing.
     """
     env = os.environ.get(ENV_TILE_DIR)
     if env:
         return env
+    installed = _installed_tile_dir()
+    if installed:
+        return installed
     here = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(os.path.dirname(here), 'tiles', 'mdrs')
 

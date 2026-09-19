@@ -5,6 +5,7 @@ map and the ROS node. Qt signals out, plain method calls in; no ROS imports.
         # commands (each raises the mission_model / coordinate_convert error
         # on bad input and leaves the mission unchanged)
         add_waypoint(name, lat, lon, target_type=GNSS) -> Waypoint
+        default_waypoint_name() -> str      # 'WP<n+1>', the name used when none is typed
         edit_waypoint(id, name=None, lat=None, lon=None)
         remove_waypoint(id) / move_up(id) / move_down(id)
         activate(id) / complete_active()
@@ -84,6 +85,10 @@ class MissionController(QObject):
         return self._frame.to_enu(wp.lat_deg, wp.lon_deg)
 
     # -- mission commands ----------------------------------------------------
+
+    def default_waypoint_name(self) -> str:
+        """Name for a waypoint added without one (typed-entry panel and map click alike)."""
+        return f'WP{len(self._model) + 1}'
 
     def add_waypoint(self, name: str, lat_deg: float, lon_deg: float,
                      target_type: TargetType = TargetType.GNSS) -> Waypoint:

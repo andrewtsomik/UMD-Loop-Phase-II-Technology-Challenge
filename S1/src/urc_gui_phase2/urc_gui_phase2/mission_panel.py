@@ -5,7 +5,9 @@ model/frame are shown in the status line, never swallowed and never raised
 into Qt's event loop.
 """
 
-from PyQt5.QtCore import Qt
+from typing import Optional
+
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPushButton,
     QVBoxLayout, QWidget)
@@ -16,10 +18,21 @@ from urc_gui_phase2.mission_controller import MissionController
 from urc_gui_phase2.mission_model import InvalidCoordinateError, Status
 
 _STATUS_MARK = {Status.PENDING: ' ', Status.ACTIVE: '>', Status.DONE: 'x'}
-_USER_ERRORS = (InvalidCoordinateError, LookupError, IndexError, ValueError, OSError)
+USER_ERRORS = (InvalidCoordinateError, LookupError, IndexError, ValueError, OSError)
+
+
+ADD_MODE_OFF_TEXT = 'Add waypoint on click'
+ADD_MODE_ON_TEXT = 'Click the map to place a waypoint  (click here to cancel)'
+_ADD_MODE_OFF_STYLE = ''
+_ADD_MODE_ON_STYLE = ('QPushButton { background: #ff9800; color: #000000; font-weight: bold; '
+                      'border: 2px solid #e65100; padding: 4px; }')
 
 
 class MissionPanel(QWidget):
+    # True while the operator has armed "add waypoint on click". Off by default and one-shot:
+    # the host turns it off after a successful add (see OperatorWindow._on_map_click_add).
+    addModeChanged = pyqtSignal(bool)
+
     def __init__(self, controller: MissionController, parent=None):
         super().__init__(parent)
         self._ctl = controller
@@ -30,6 +43,8 @@ class MissionPanel(QWidget):
         self._status = QLabel()
         self._status.setWordWrap(True)
 
+        self._add_mode = QPushButton(ADD_MODE_OFF_TEXT)
+        self._add_mode.setCheckable(True)
         self._add = QPushButton('Add')
         self._update = QPushButton('Update selected')
         self._remove = QPushButton('Remove')
@@ -49,6 +64,7 @@ class MissionPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel('Waypoints  (> active, x done)'))
         layout.addWidget(self._list, 1)
+        layout.addWidget(self._add_mode)
         layout.addLayout(row(self._up, self._down, self._remove))
         layout.addLayout(row(self._activate, self._complete))
         layout.addWidget(self._name)
@@ -57,6 +73,7 @@ class MissionPanel(QWidget):
         layout.addLayout(row(self._save, self._load))
         layout.addWidget(self._status)
 
+        self._add_mode.toggled.connect(self._on_add_mode_toggled)
         self._add.clicked.connect(self._on_add)
         self._update.clicked.connect(self._on_update)
         self._remove.clicked.connect(lambda: self._run_on_selected(self._ctl.remove_waypoint))
@@ -86,15 +103,36 @@ class MissionPanel(QWidget):
         """Call a controller command; report expected user errors in the status line."""
         try:
             result = func(*args, **kwargs)
-        except _USER_ERRORS as exc:
+        except USER_ERRORS as exc:
             self._say(str(exc), ok=False)
             return None
         self._say('', ok=True)
         return result
 
-    def _say(self, text: str, ok: bool) -> None:
+    @property
+    def add_mode(self) -> bool:
+        """True while a click on empty map should place a waypoint."""
+        return self._add_mode.isChecked()
+
+    def set_add_mode(self, enabled: bool) -> None:
+        self._add_mode.setChecked(bool(enabled))
+
+    def _on_add_mode_toggled(self, enabled: bool) -> None:
+        self._add_mode.setText(ADD_MODE_ON_TEXT if enabled else ADD_MODE_OFF_TEXT)
+        self._add_mode.setStyleSheet(_ADD_MODE_ON_STYLE if enabled else _ADD_MODE_OFF_STYLE)
+        self.addModeChanged.emit(enabled)
+
+    def report(self, text: str, ok: Optional[bool]) -> None:
+        """Show a message in the status line (for other widgets that act on the mission).
+
+        ok=True is green, ok=False is red, ok=None is a neutral hint.
+        """
+        self._say(text, ok)
+
+    def _say(self, text: str, ok: Optional[bool]) -> None:
+        colour = {True: '#1b5e20', False: '#b71c1c', None: '#616161'}[ok]
         self._status.setText(text)
-        self._status.setStyleSheet('color: %s;' % ('#1b5e20' if ok else '#b71c1c'))
+        self._status.setStyleSheet(f'color: {colour};')
 
     def _sync_buttons(self, *_):
         has_sel = self._ctl.selected_id is not None
@@ -111,7 +149,7 @@ class MissionPanel(QWidget):
         coord = self._entry.coordinate()
         if coord is None:
             return
-        name = self._name.text().strip() or f'WP{len(self._ctl.model) + 1}'
+        name = self._name.text().strip() or self._ctl.default_waypoint_name()
         wp = self._run(self._ctl.add_waypoint, name, coord[0], coord[1])
         if wp is not None:
             self._ctl.select(wp.id)

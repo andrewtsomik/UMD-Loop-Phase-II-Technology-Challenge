@@ -7,10 +7,12 @@ Public interface (everything else is private):
         select_waypoint(waypoint_id)     # programmatic selection, or None to clear
         selected_waypoint_id             # property
         set_rover_position(lat, lon)     # WGS84 -> distinct rover marker
+        set_crosshair_cursor(enabled)    # crosshair over the map while placing a waypoint
         set_local_frame(frame)           # coordinate_convert.LocalFrame
         set_rover_enu(east_m, north_m)   # local ENU -> WGS84 via the frame
         clear_rover()
         selectionChanged(object)         # signal: waypoint id, or None if cleared
+        mapClickedForNewWaypoint(float, float)  # signal: lat, lon of a click on empty map
         blocked_requests                 # property: non-local URLs the engine refused
 
 Dependencies on the rest of the project are deliberately only Waypoint/Status
@@ -111,6 +113,10 @@ def _js_string_body(text: str) -> str:
 
 class OfflineMapWidget(QWidget):
     selectionChanged = pyqtSignal(object)  # waypoint id (str) or None
+    # A click that hit no waypoint: WGS84 lat, lon as computed by Leaflet from the click pixel.
+    # The widget only reports it, always; whether a waypoint is created (e.g. only while an
+    # "add waypoint" mode is armed) is the host's decision.
+    mapClickedForNewWaypoint = pyqtSignal(float, float)
 
     def __init__(self, tile_dir: Optional[str] = None, threshold_px: float = DEFAULT_THRESHOLD_PX,
                  parent=None):
@@ -220,6 +226,11 @@ class OfflineMapWidget(QWidget):
                 f'{self._rover.layerName}.setLatLng([{latlon[0]!r}, {latlon[1]!r}]);')
         self._refresh_banner()
 
+    def set_crosshair_cursor(self, enabled: bool) -> None:
+        """Crosshair over the map (True) or Leaflet's default grab cursor (False)."""
+        cursor = "'crosshair'" if enabled else "''"
+        self._map.runJavaScriptForMap(f'{self._map.jsName}.getContainer().style.cursor = {cursor};')
+
     def set_local_frame(self, frame) -> None:
         """The LocalFrame used to convert ENU rover positions to WGS84."""
         self._frame = frame
@@ -254,7 +265,12 @@ class OfflineMapWidget(QWidget):
             self._last_zoom = float(zoom)
         hit = pick_nearest(lat, lng, [(w.id, w.lat_deg, w.lon_deg) for w in self._waypoints],
                            self._last_zoom, self._threshold_px)
-        self._set_selected(hit)  # a click on empty map clears the selection
+        if hit is None:
+            # Empty map: ask the host to add a waypoint here. The selection is left alone;
+            # the host selects the new waypoint if the add succeeds.
+            self.mapClickedForNewWaypoint.emit(lat, lng)
+            return
+        self._set_selected(hit)
 
     def _set_selected(self, waypoint_id: Optional[str]) -> None:
         if waypoint_id == self._selected_id:

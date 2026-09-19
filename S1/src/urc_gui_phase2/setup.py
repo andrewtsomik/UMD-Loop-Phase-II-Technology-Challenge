@@ -1,6 +1,20 @@
+import os
+
 from setuptools import find_packages, setup
 
 package_name = 'urc_gui_phase2'
+
+
+def tile_data_files(src_root='tiles'):
+    """Offline map tiles (incl. metadata.json) -> share/<pkg>/tiles/..., keeping the z/x/y layout."""
+    entries = []
+    for dirpath, _dirs, files in sorted(os.walk(src_root)):
+        files = sorted(f for f in files if not f.endswith('.part'))
+        if files:
+            entries.append((os.path.join('share', package_name, dirpath),
+                            [os.path.join(dirpath, f) for f in files]))
+    return entries
+
 
 setup(
     name=package_name,
@@ -10,7 +24,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-    ],
+    ] + tile_data_files(),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='soham',

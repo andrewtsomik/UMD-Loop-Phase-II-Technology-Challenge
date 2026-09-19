@@ -19,7 +19,8 @@ from urc_gui_phase2.mission_model import InvalidCoordinateError  # noqa: E402
 from urc_gui_phase2.mission_panel import MissionPanel  # noqa: E402
 
 # Must precede the first QApplication so QtWebEngine tests can share the process.
-QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+if QApplication.instance() is None:
+    QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
 _app = QApplication.instance() or QApplication([])
 MDRS = (38.4058, -110.7919)
 
@@ -92,3 +93,16 @@ def test_panel_add_select_remove():
     assert len(c.model) == 0
     p._remove.click()   # nothing selected: message, no exception
     assert 'Select' in p._status.text() or not p._remove.isEnabled()
+
+
+def test_panel_add_mode_toggle_defaults_off_and_signals():
+    p = MissionPanel(MissionController())
+    seen = []
+    p.addModeChanged.connect(seen.append)
+    assert p.add_mode is False
+    p.set_add_mode(True)
+    p.set_add_mode(True)          # no change, no repeat signal
+    p.set_add_mode(False)
+    assert seen == [True, False] and p.add_mode is False
+    p.report('hint', ok=None)
+    assert p._status.text() == 'hint'
