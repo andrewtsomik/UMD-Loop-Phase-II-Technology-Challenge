@@ -1,0 +1,20 @@
+#define BUZZER_PIN 18
+void setup() {
+  // put your setup code here, to run once:
+  int i=0;
+  int frequency = 300;
+  int duration = 5000;  //5 seconds or 5000 milliseconds
+  pinMode(BUZZER_PIN, OUTPUT);
+  unsigned long startTime = millis();
+  while (millis() - startTime < duration) {
+  digitalWrite(BUZZER_PIN, HIGH);
+  delayMicroseconds(frequency); 
+  digitalWrite(BUZZER_PIN, LOW);
+  delayMicroseconds(frequency);
+  i=i+1;
+  } 
+  
+}
+
+void loop() {
+}
