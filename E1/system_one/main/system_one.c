@@ -9,8 +9,8 @@
 #define LED_FAR    18     // red
 #define LED_EXACT  13     // green
 
-#define TARGET      0xA5u
-#define NEAR_BAND   0x10u
+#define TARGET      0x3FF44578u
+#define NEAR_BAND   16u
 
 // ---------- UART0 receive, register level ----------
 
@@ -69,7 +69,7 @@ void app_main(void)
     hw_pad_out(LED_EXACT);
     all_off();
 
-    esp_rom_printf("\nSystem One | target 0x%02X | "
+    esp_rom_printf("\nSystem One | target 0x%08X | "
                    "green=exact yellow=close red=far\n\n", TARGET);
 
     while (1) {
@@ -81,7 +81,7 @@ void app_main(void)
         else if (delta <= NEAR_BAND) hw_set(LED_CLOSE);
         else                         hw_set(LED_FAR);
 
-        esp_rom_printf("0x%02X  delta 0x%02X\n\n",
+        esp_rom_printf("0x%08X  delta 0x%0X\n\n",
                        (unsigned)guess, (unsigned)delta);
     }
 }
