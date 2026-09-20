@@ -1,12 +1,19 @@
-#include <Wire.h>
+#define SIGNAL_PIN 34
+
 void setup() {
-    Serial.begin(115200); //starts communication and gives baud rate for communication speed
-
-
-    Wire.begin(21, 22); //starts i2c and assigns sda and sdl for gpio 21 and 22
+  Serial.begin(115200);
 }
+
 void loop() {
-int value = analogRead(34); //reads voltage using 34pin and assigns it a value
-Serial.println(value); //prints the value
-delay(10); //delays by 10 milliseconds
+
+  // Read analog voltage
+  int adcValue = analogRead(SIGNAL_PIN);
+
+  // Convert 0-4095 ADC range to 0-255
+  int signalValue = map(adcValue, 0, 4095, 0, 255);
+
+  Serial.print("Signal value: ");
+  Serial.println(signalValue);
+
+  delay(10);
 }
