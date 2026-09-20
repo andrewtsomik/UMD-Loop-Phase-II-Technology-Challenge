@@ -1,13 +1,16 @@
 import json
+import math
 import sys
 import time
 
 import rclpy
-from rclpy.node import Node
+from rclpy._rclpy_pybind11 import RCLError
+from rclpy.executors import SingleThreadedExecutor
 from std_msgs.msg import String
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import (
     QApplication,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -16,6 +19,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from urc_rover_console.mission_event_log import MissionEventLog
 from urc_rover_console.telemetry_monitor import TelemetryMonitor
 from urc_gui_phase2.map_widget import OfflineMapWidget
 from urc_gui_phase2.mission_controller import MissionController
@@ -25,6 +29,19 @@ from urc_gui_phase2.mission_panel import (
     USER_ERRORS,
     MissionPanel,
 )
+from urc_gui_phase2.coordinate_convert import LocalFrame
+from urc_gui_phase2.operator_gui_node import OperatorGuiNode
+from urc_gui_phase2.rover_track import RoverTrack
+
+DATA_STALE_AFTER_S = 2.5
+SPIN_PERIOD_MS = 10
+MAX_SPINS_PER_TICK = 10
+
+
+def spin_ready_callbacks(executor, max_callbacks=MAX_SPINS_PER_TICK):
+    """Process a bounded number of ROS callbacks without blocking Qt."""
+    for _ in range(max_callbacks):
+        executor.spin_once(timeout_sec=0)
 
 
 class RoverConsole(QMainWindow):
@@ -32,20 +49,52 @@ class RoverConsole(QMainWindow):
     def __init__(self, node):
         super().__init__()
         self.node = node
-        self.telemetry_monitor = TelemetryMonitor(stale_after_seconds=2.5)
+        self.telemetry_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
+        self.fix_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
+        self.status_monitor = TelemetryMonitor(DATA_STALE_AFTER_S)
         self.start_time = time.monotonic()
-        self.mission_controller = MissionController()
+        self.event_log = MissionEventLog()
+        self.rover_track = RoverTrack()
+        self._last_mission_state = None
+        self._current_mission_state = "UNKNOWN"
+        self._completing_arrival = False
+        self._safety_stop_sent = False
+        origin = self.node.spawn_origin()
+
+        if origin is None:
+            frame = None
+        else:
+            frame = LocalFrame(*origin)
+
+        self.mission_controller = MissionController(frame=frame)
+        self.event_log.record(
+            "session",
+            "console_started",
+            spawn_lat_deg=None if origin is None else origin[0],
+            spawn_lon_deg=None if origin is None else origin[1],
+            stale_timeout_s=DATA_STALE_AFTER_S,
+        )
+        if origin is not None:
+            self.event_log.record(
+                "coordinate_conversion",
+                "spawn_wgs84_to_enu_origin",
+                latitude_deg=origin[0],
+                longitude_deg=origin[1],
+                east_m=0.0,
+                north_m=0.0,
+                frame_id="map",
+            )
         self.setWindowTitle("URC Autonomous Navigation Rover Operations Console")
         self.resize(1500, 900)
         self.build_ui()
+        self.node.on_fix = self.on_rover_fix
 
         self.subscription = node.create_subscription(
             String, "/rover/telemetry", self.update_telemetry, 10)
+        self.status_subscription = node.create_subscription(
+            String, "/mission/status", self.update_mission_status, 10)
         self.command_publisher = node.create_publisher(String, "/operator/command", 10)
 
-        self.ros_timer = QTimer(self)
-        self.ros_timer.timeout.connect(lambda: rclpy.spin_once(self.node, timeout_sec=0))
-        self.ros_timer.start(50)
         self.ui_timer = QTimer(self)
         self.ui_timer.timeout.connect(self.update_clock_and_link)
         self.ui_timer.start(250)
@@ -123,9 +172,16 @@ class RoverConsole(QMainWindow):
         self.feedback = QLabel("No operator command sent")
 
         self.start_button = QPushButton("START")
+        # START remains unavailable until both safety-critical ROS streams have
+        # produced fresh data. STOP, ABORT, and RESET remain usable at all times.
+        self.start_button.setEnabled(False)
+        self.start_button.setToolTip(
+            "Waiting for fresh GNSS and mission-status data"
+        )
         self.stop_button = QPushButton("STOP")
         self.abort_button = QPushButton("ABORT")
         self.reset_button = QPushButton("RESET")
+        self.export_log_button = QPushButton("EXPORT LOG")
 
         self.abort_button.setObjectName("danger")
 
@@ -141,12 +197,16 @@ class RoverConsole(QMainWindow):
         self.reset_button.clicked.connect(
             lambda: self.send_command("RESET_MISSION")
         )
+        self.export_log_button.clicked.connect(
+            self.export_mission_log
+        )
 
         commands.addWidget(self.feedback, 1)
         commands.addWidget(self.start_button)
         commands.addWidget(self.stop_button)
         commands.addWidget(self.abort_button)
         commands.addWidget(self.reset_button)
+        commands.addWidget(self.export_log_button)
 
         root.addLayout(commands)
 
@@ -201,6 +261,13 @@ class RoverConsole(QMainWindow):
                 font-weight: 700;
             }
 
+            QLabel#degraded {
+                background: #b45309;
+                color: white;
+                padding: 9px;
+                font-weight: 700;
+            }
+
             QLabel#status_value {
                 background: white;
                 border: 1px solid #cbd5e1;
@@ -237,6 +304,9 @@ class RoverConsole(QMainWindow):
         self.mission_controller.missionChanged.connect(
             self.refresh_map_waypoints
         )
+        self.mission_controller.missionChanged.connect(
+            self.record_mission_snapshot
+        )
 
         self.mission_controller.selectionChanged.connect(
             self.on_controller_selection
@@ -253,6 +323,22 @@ class RoverConsole(QMainWindow):
             self.map_widget.set_crosshair_cursor
         )
 
+        self.mission_controller.roverMoved.connect(
+            self.on_rover_moved
+        )
+
+        self.mission_controller.frameChanged.connect(
+            self.map_widget.set_local_frame
+        )
+
+        self.mission_controller.activeTargetChanged.connect(
+            self.publish_active_target
+        )
+
+        if self.mission_controller.frame is not None:
+            self.map_widget.set_local_frame(
+                self.mission_controller.frame
+            )
         self.refresh_map_waypoints()
 
     def on_map_click_add(self, latitude, longitude):
@@ -289,11 +375,132 @@ class RoverConsole(QMainWindow):
             f"{latitude:.6f}, {longitude:.6f}",
             ok=True,
         )
+
+    def on_rover_fix(self, latitude, longitude):
+        """Process a valid WGS 84 position received from the rover."""
+        self.fix_monitor.mark_received()
+
+        if self.mission_controller.frame is None:
+            self.mission_controller.set_frame(
+                LocalFrame(latitude, longitude)
+            )
+            self.event_log.record(
+                "coordinate_conversion",
+                "gnss_fix_established_enu_origin",
+                latitude_deg=latitude,
+                longitude_deg=longitude,
+                east_m=0.0,
+                north_m=0.0,
+                frame_id="map",
+            )
+
+        self.mission_controller.set_rover_fix(
+            latitude,
+            longitude,
+        )
+
+    def on_rover_moved(self, latitude, longitude):
+        """Update marker, stable heading, and traveled path from a GNSS fix."""
+        self.map_widget.set_rover_position(latitude, longitude)
+        rover_enu = self.mission_controller.rover_enu()
+        if rover_enu is None:
+            return
+
+        changed = self.rover_track.add_fix(
+            latitude,
+            longitude,
+            rover_enu.east_m,
+            rover_enu.north_m,
+        )
+        if not changed:
+            return
+
+        self.map_widget.set_rover_path(self.rover_track.points)
+        if self.rover_track.heading_deg is not None:
+            self.map_widget.set_rover_heading(
+                self.rover_track.heading_deg
+            )
+
+    def publish_active_target(self, _waypoint):
+        """Publish the active target in the local REP 103 frame."""
+
+        active_waypoint = self.mission_controller.active_target()
+
+        if active_waypoint is None:
+            # Completing the final waypoint deliberately leaves the simulator
+            # in ARRIVED so the success state remains visible. Other removals
+            # still cancel the rover's target immediately.
+            if self._completing_arrival:
+                return False
+            cancel_message = String()
+            cancel_message.data = "CANCEL_TARGET"
+            self.command_publisher.publish(cancel_message)
+            return False
+
+        if self.mission_controller.frame is None:
+            self.mission_panel.report(
+                "Target cannot be sent until a rover position establishes "
+                "the local coordinate frame.",
+                ok=False,
+            )
+            return False
+
+        try:
+            target = self.mission_controller.active_target_enu()
+        except USER_ERRORS as error:
+            self.mission_panel.report(
+                f"Target could not be converted: {error}",
+                ok=False,
+            )
+            return False
+
+        self.node.publish_active_target(
+            target.east_m,
+            target.north_m,
+        )
+        frame = self.mission_controller.frame
+        self.event_log.record(
+            "coordinate_conversion",
+            "target_wgs84_to_enu",
+            waypoint_id=active_waypoint.id,
+            waypoint_name=active_waypoint.name,
+            latitude_deg=active_waypoint.lat_deg,
+            longitude_deg=active_waypoint.lon_deg,
+            east_m=round(target.east_m, 3),
+            north_m=round(target.north_m, 3),
+            origin_lat_deg=frame.origin_lat_deg,
+            origin_lon_deg=frame.origin_lon_deg,
+            frame_id="map",
+        )
+        return True
+
     def refresh_map_waypoints(self):
         """Redraw map markers using the current mission."""
 
         self.map_widget.set_waypoints(
             self.mission_controller.model
+        )
+
+    def record_mission_snapshot(self):
+        """Record mission edits without coupling the logger to Qt widgets."""
+        waypoints = [
+            {
+                "id": waypoint.id,
+                "name": waypoint.name,
+                "latitude_deg": waypoint.lat_deg,
+                "longitude_deg": waypoint.lon_deg,
+                "target_type": waypoint.target_type.value,
+                "status": waypoint.status.value,
+            }
+            for waypoint in self.mission_controller.model
+        ]
+        active = self.mission_controller.active_target()
+        self.event_log.record(
+            "mission",
+            "waypoints_changed",
+            waypoint_count=len(waypoints),
+            active_waypoint_id=None if active is None else active.id,
+            waypoints=waypoints,
         )
 
     def on_map_selection(self, waypoint_id):
@@ -309,32 +516,160 @@ class RoverConsole(QMainWindow):
             self.map_widget.select_waypoint(waypoint_id)
 
     def send_command(self, command):
-        message = String(); message.data = command
+        if command == "START_MISSION":
+            failures = self.critical_data_failures()
+            if failures:
+                text = (
+                    "Start blocked: waiting for fresh "
+                    f"{', '.join(failures)} data."
+                )
+                self.feedback.setText(text)
+                self.mission_panel.report(text, ok=False)
+                self.event_log.record(
+                    "operator_command",
+                    "blocked",
+                    command=command,
+                    reason=text,
+                )
+                return False
+
+            if self.mission_controller.active_target() is None:
+                text = "Start blocked: set an active waypoint first."
+                self.feedback.setText(text)
+                self.mission_panel.report(text, ok=False)
+                self.event_log.record(
+                    "operator_command",
+                    "blocked",
+                    command=command,
+                    reason=text,
+                )
+                return False
+
+            if not self.publish_active_target(
+                self.mission_controller.active_target()
+            ):
+                self.feedback.setText(
+                    "Start blocked: active target could not be sent."
+                )
+                self.event_log.record(
+                    "operator_command",
+                    "blocked",
+                    command=command,
+                    reason="active target could not be sent",
+                )
+                return False
+
+        message = String()
+        message.data = command
         self.command_publisher.publish(message)
+        self.event_log.record(
+            "operator_command",
+            "sent",
+            command=command,
+        )
+
+        if command == "RESET_MISSION":
+            # STOP and ABORT preserve the track for review; RESET explicitly
+            # starts a new run and therefore clears historical map overlays.
+            self.rover_track.reset()
+            self.map_widget.clear_rover_track()
+
         self.feedback.setText(f"Command sent: {command.replace('_', ' ')}")
+        return True
 
     def update_clock_and_link(self):
         elapsed = int(time.monotonic() - self.start_time)
         self.clock.setText(f"{elapsed // 60:02d}:{elapsed % 60:02d}")
 
-        state, age = self.telemetry_monitor.connection_state()
+        streams = self.data_stream_states()
+        failures = self.critical_data_failures(streams)
+        diagnostics_state, diagnostics_age = streams["diagnostics"]
 
-        if state == "waiting":
-            self.link.setObjectName("waiting")
-            self.link.setText("WAITING FOR TELEMETRY")
-        elif state == "active":
-            self.link.setObjectName("active")
-            self.link.setText(f"LINK ACTIVE · {age:.1f}s")
+        if failures:
+            stale = [
+                name for name in failures
+                if streams[name][0] == "stale"
+            ]
+            self.link.setObjectName("stale" if stale else "waiting")
+            problem = "STALE" if stale else "MISSING"
+            self.link.setText(f"{problem}: {', '.join(failures).upper()}")
+        elif diagnostics_state != "active":
+            # Power/diagnostic loss is visible but does not invalidate fresh
+            # position and mission-state data used for autonomous motion.
+            self.link.setObjectName("degraded")
+            detail = (
+                f"{diagnostics_age:.1f}s"
+                if diagnostics_age is not None else "missing"
+            )
+            self.link.setText(f"NAV DATA ACTIVE · DIAGNOSTICS {detail}")
         else:
-            self.link.setObjectName("stale")
-            self.link.setText(f"TELEMETRY STALE · {age:.1f}s")
+            self.link.setObjectName("active")
+            self.link.setText("ROS DATA ACTIVE")
+
+        ready = not failures
+        self.start_button.setEnabled(ready)
+        self.start_button.setToolTip(
+            "" if ready else
+            f"Waiting for fresh {', '.join(failures)} data"
+        )
+
+        if failures:
+            failure_text = ", ".join(failures).upper()
+            if self._current_mission_state in ("NAVIGATING", "AVOIDING"):
+                self.send_safety_stop_once(failures)
+            if self._safety_stop_sent:
+                self.banner.setText(
+                    f"SAFETY STOP — {failure_text} DATA UNAVAILABLE"
+                )
+            else:
+                self.banner.setText(
+                    f"DATA UNAVAILABLE — {failure_text}"
+                )
+        else:
+            # A recovered stream permits one future safety stop if another
+            # distinct outage occurs.
+            self._safety_stop_sent = False
 
         self.link.style().unpolish(self.link)
         self.link.style().polish(self.link)
 
-    def update_telemetry(self, message):
-        self.telemetry_monitor.mark_received()
+    def data_stream_states(self):
+        """Return health for each ROS input used by the combined console."""
+        return {
+            "gnss": self.fix_monitor.connection_state(),
+            "mission status": self.status_monitor.connection_state(),
+            "diagnostics": self.telemetry_monitor.connection_state(),
+        }
 
+    def critical_data_failures(self, streams=None):
+        """List safety-critical streams that are missing or stale."""
+        streams = streams if streams is not None else self.data_stream_states()
+        return [
+            name for name in ("gnss", "mission status")
+            if streams[name][0] != "active"
+        ]
+
+    def send_safety_stop_once(self, failures):
+        """Request one fail-safe stop for the current critical-data outage."""
+        if self._safety_stop_sent:
+            return
+        message = String()
+        message.data = "STOP_MISSION"
+        self.command_publisher.publish(message)
+        self._safety_stop_sent = True
+        self.event_log.record(
+            "safety",
+            "automatic_stop_sent",
+            command="STOP_MISSION",
+            unavailable_streams=list(failures),
+        )
+        self.feedback.setText(
+            "Safety STOP sent because fresh "
+            f"{', '.join(failures)} data became unavailable."
+        )
+
+    def update_telemetry(self, message):
+        """Update diagnostics that are not owned by the navigation simulator."""
         try:
             data = json.loads(message.data)
         except json.JSONDecodeError:
@@ -343,40 +678,271 @@ class RoverConsole(QMainWindow):
 
         try:
             nav = data["navigation"]
-
-            target = nav["target"]
-            state = nav["state"]
-            distance = nav["distance_m"]
-            accuracy = nav["gnss_accuracy_m"]
-        except (KeyError, TypeError):
+            accuracy = float(nav["gnss_accuracy_m"])
+            if not math.isfinite(accuracy) or accuracy < 0.0:
+                raise ValueError("invalid GNSS accuracy")
+        except (KeyError, TypeError, ValueError):
             self.link.setText("INCOMPLETE TELEMETRY MESSAGE")
             return
 
-        self.target.setText(f"Target: {target}")
-        self.nav_state.setText(f"State: {state}")
-        self.distance.setText(f"Distance: {distance:.1f} m")
+        # Invalid payloads do not refresh stream health; receiving bytes is
+        # not the same as receiving trustworthy diagnostic information.
+        self.telemetry_monitor.mark_received()
         self.accuracy.setText(f"GNSS accuracy: ±{accuracy:.1f} m")
+
+    def update_mission_status(self, message):
+        """Display the state produced by the node that actually moves the rover."""
+        valid_states = {
+            "IDLE",
+            "READY",
+            "NAVIGATING",
+            "AVOIDING",
+            "STOPPED",
+            "ARRIVED",
+            "ABORTED",
+            "UNREACHABLE",
+        }
+
+        try:
+            data = json.loads(message.data)
+            state = data["state"]
+            has_target = data["has_target"]
+            distance = data["distance_m"]
+            avoidance_planned = data.get("avoidance_planned", False)
+            route_data = data.get("route", [])
+            obstacle = data.get("obstacle")
+            planning_error = data.get("planning_error")
+            if state not in valid_states or not isinstance(has_target, bool):
+                raise ValueError("invalid state or target flag")
+            if not isinstance(avoidance_planned, bool):
+                raise ValueError("invalid avoidance flag")
+            if distance is not None:
+                distance = float(distance)
+                if not math.isfinite(distance) or distance < 0.0:
+                    raise ValueError("invalid target distance")
+            if not isinstance(route_data, list):
+                raise ValueError("invalid planned route")
+            route = []
+            for point in route_data:
+                east_m = float(point["east_m"])
+                north_m = float(point["north_m"])
+                if not (math.isfinite(east_m) and math.isfinite(north_m)):
+                    raise ValueError("invalid planned route point")
+                route.append((east_m, north_m))
+            if obstacle is not None:
+                obstacle = {
+                    name: float(obstacle[name])
+                    for name in (
+                        "east_m",
+                        "north_m",
+                        "radius_m",
+                        "clearance_m",
+                    )
+                }
+                if not all(math.isfinite(value) for value in obstacle.values()):
+                    raise ValueError("invalid obstacle")
+                if obstacle["radius_m"] <= 0.0 or obstacle["clearance_m"] < 0.0:
+                    raise ValueError("invalid obstacle size")
+            if planning_error is not None and not isinstance(planning_error, str):
+                raise ValueError("invalid planning error")
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+            self.feedback.setText("INVALID MISSION STATUS MESSAGE")
+            return
+
+        self.status_monitor.mark_received()
+        previous_state = self._current_mission_state
+        self._current_mission_state = state
+        active = self.mission_controller.active_target()
+        target_name = (
+            active.name
+            if active is not None and (has_target or state == "UNREACHABLE")
+            else "--"
+        )
+        if self.mission_controller.frame is not None:
+            if obstacle is not None:
+                self.map_widget.set_obstacle_enu(**obstacle)
+            self.map_widget.set_planned_route_enu(route)
+        if state != previous_state:
+            self.event_log.record(
+                "mission",
+                "state_changed",
+                previous_state=previous_state,
+                state=state,
+                target_name=target_name,
+                distance_m=distance,
+            )
+            if state == "READY" and avoidance_planned:
+                self.event_log.record(
+                    "planner",
+                    "obstacle_detour_planned",
+                    target_name=target_name,
+                    remaining_route=[
+                        {"east_m": east, "north_m": north}
+                        for east, north in route
+                    ],
+                    obstacle=obstacle,
+                )
+            if state == "ABORTED" and active is not None:
+                self.event_log.record(
+                    "target_result",
+                    "aborted",
+                    waypoint_id=active.id,
+                    waypoint_name=active.name,
+                )
+            elif state == "UNREACHABLE" and active is not None:
+                self.event_log.record(
+                    "target_result",
+                    "unreachable",
+                    waypoint_id=active.id,
+                    waypoint_name=active.name,
+                    reason=planning_error,
+                )
+        self.target.setText(f"Target: {target_name}")
+        self.nav_state.setText(f"State: {state}")
+        self.distance.setText(
+            "Distance: --" if distance is None else f"Distance: {distance:.1f} m"
+        )
 
         if state == "ARRIVED":
             self.banner.setText("TARGET REACHED — ROVER STOPPED")
-        else:
-            self.banner.setText(f"{state} — {target}")
-
-        if state in ("RETURNING", "ABORTED"):
-            self.feedback.setText(
-                "Rover acknowledged abort command"
+        elif state == "AVOIDING":
+            self.banner.setText(
+                f"AVOIDING OBSTACLE — {target_name}"
             )
+        elif state == "UNREACHABLE":
+            self.banner.setText(
+                f"TARGET UNREACHABLE — {target_name}"
+            )
+        elif state == "READY":
+            ready_text = " · OBSTACLE DETOUR PLANNED" if avoidance_planned else ""
+            self.banner.setText(
+                f"READY — {target_name}{ready_text} — PRESS START"
+            )
+        else:
+            self.banner.setText(f"{state} — {target_name}")
+
+        # Status is published repeatedly. Only the transition into ARRIVED may
+        # modify the mission, otherwise the same waypoint would be completed
+        # again on every simulator tick.
+        entered_arrived = (
+            state == "ARRIVED" and self._last_mission_state != "ARRIVED"
+        )
+        self._last_mission_state = state
+        if entered_arrived:
+            self.complete_arrived_waypoint()
+
+        if state == "ABORTED":
+            self.feedback.setText("Rover acknowledged abort command")
+        elif state == "UNREACHABLE":
+            self.feedback.setText(
+                f"Target is unreachable: {planning_error or 'planner rejected it'}"
+            )
+
+    def complete_arrived_waypoint(self):
+        """Complete one reached target and prepare, but do not start, the next."""
+        arrived = self.mission_controller.active_target()
+        if arrived is None:
+            return
+
+        self._completing_arrival = True
+        try:
+            next_waypoint = self.mission_controller.complete_active()
+        except USER_ERRORS as error:
+            self.mission_panel.report(
+                f"Reached target could not be completed: {error}",
+                ok=False,
+            )
+            return
+        finally:
+            self._completing_arrival = False
+
+        if next_waypoint is None:
+            text = f"Reached {arrived.name}; mission complete."
+        else:
+            text = (
+                f"Reached {arrived.name}; {next_waypoint.name} is ready. "
+                f"Press START to continue."
+            )
+        self.event_log.record(
+            "target_result",
+            "reached",
+            waypoint_id=arrived.id,
+            waypoint_name=arrived.name,
+            next_waypoint_id=(
+                None if next_waypoint is None else next_waypoint.id
+            ),
+        )
+        self.feedback.setText(text)
+        self.mission_panel.report(text, ok=True)
+
+    def export_mission_log(self):
+        """Let the operator export all recorded events as a portable CSV."""
+        path, _selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "Export mission log",
+            "mission_log.csv",
+            "CSV files (*.csv)",
+        )
+        if not path:
+            return False
+        if not path.lower().endswith(".csv"):
+            path += ".csv"
+
+        self.event_log.record(
+            "session",
+            "log_export_requested",
+            file_name=path.rsplit("/", 1)[-1],
+        )
+        try:
+            destination = self.event_log.export_csv(path)
+        except (OSError, ValueError) as error:
+            text = f"Mission log could not be exported: {error}"
+            self.feedback.setText(text)
+            self.mission_panel.report(text, ok=False)
+            return False
+
+        text = (
+            f"Exported {len(self.event_log.events)} mission-log events "
+            f"to {destination}"
+        )
+        self.feedback.setText(text)
+        self.mission_panel.report(text, ok=True)
+        return True
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = Node("rover_operations_console")
     app = QApplication(sys.argv)
-    window = RoverConsole(node); window.show()
+    node = OperatorGuiNode()
+    executor = SingleThreadedExecutor()
+    executor.add_node(node)
+    shutting_down = False
+
+    def spin_ros():
+        """Give ready ROS callbacks a short, bounded turn in the Qt loop."""
+        if shutting_down:
+            return
+        try:
+            spin_ready_callbacks(executor)
+        except RCLError:
+            # ROS can become unavailable while Qt is closing the application.
+            return
+
+    ros_timer = QTimer()
+    ros_timer.timeout.connect(spin_ros)
+    ros_timer.start(SPIN_PERIOD_MS)
+
+    window = RoverConsole(node)
+    window.show()
     try:
         code = app.exec_()
     finally:
-        node.destroy_node(); rclpy.shutdown()
+        shutting_down = True
+        ros_timer.stop()
+        executor.shutdown()
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
     sys.exit(code)
 
 

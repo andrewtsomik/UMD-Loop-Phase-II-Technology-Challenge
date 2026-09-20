@@ -15,6 +15,7 @@
   <exec_depend>python3-pyqt5.qtwebengine</exec_depend>
   <!-- WGS84 <-> UTM. pyqtlet2 is pip-only (no rosdep key): pip install pyqtlet2 -->
   <exec_depend>python3-pyproj</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

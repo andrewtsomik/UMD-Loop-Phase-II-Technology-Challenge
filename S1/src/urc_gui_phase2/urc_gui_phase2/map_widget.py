@@ -7,6 +7,11 @@ Public interface (everything else is private):
         select_waypoint(waypoint_id)     # programmatic selection, or None to clear
         selected_waypoint_id             # property
         set_rover_position(lat, lon)     # WGS84 -> distinct rover marker
+        set_rover_path(points)           # accepted WGS84 history -> red polyline
+        set_rover_heading(degrees)       # compass heading -> short direction line
+        set_obstacle_enu(east, north, radius, clearance)
+        set_planned_route_enu(points)    # remaining ENU planner route
+        clear_rover_track()              # clear path + heading, keep rover marker
         set_crosshair_cursor(enabled)    # crosshair over the map while placing a waypoint
         set_local_frame(frame)           # coordinate_convert.LocalFrame
         set_rover_enu(east_m, north_m)   # local ENU -> WGS84 via the frame
@@ -33,6 +38,7 @@ How "no network" is enforced (three independent layers):
 
 import html
 import json
+import math
 import threading
 from typing import Iterable, List, Optional
 from urllib.parse import quote
@@ -127,6 +133,12 @@ class OfflineMapWidget(QWidget):
         self._selected_id: Optional[str] = None
         self._rover = None            # pyqtlet2 CircleMarker or None
         self._rover_latlon = None
+        self._rover_path = None       # Leaflet Polyline or None
+        self._heading_line = None     # short line showing forward direction
+        self._planned_route = None    # remaining obstacle-planner route
+        self._obstacle = None         # physical obstacle circle
+        self._obstacle_safety = None  # inflated planner boundary
+        self._obstacle_spec = None
         self._frame = None
         self._last_zoom = float(DEFAULT_ZOOM)
 
@@ -226,6 +238,160 @@ class OfflineMapWidget(QWidget):
                 f'{self._rover.layerName}.setLatLng([{latlon[0]!r}, {latlon[1]!r}]);')
         self._refresh_banner()
 
+    def set_rover_path(self, points: Iterable) -> None:
+        """Draw the accepted WGS 84 position history as one offline polyline."""
+        latlngs = [[float(lat), float(lon)] for lat, lon in points]
+        if len(latlngs) < 2:
+            if self._rover_path is not None:
+                self._map.removeLayer(self._rover_path)
+                self._rover_path = None
+            return
+
+        encoded = json.dumps(latlngs)
+        if self._rover_path is None:
+            self._rover_path = L.polyline(latlngs, {
+                'color': '#dc2626', 'weight': 4, 'opacity': 0.8,
+            })
+            self._map.addLayer(self._rover_path)
+            self._rover_path.bindTooltip('Traveled path')
+        else:
+            self._map.runJavaScriptForMap(
+                f'{self._rover_path.layerName}.setLatLngs({encoded});'
+            )
+        self._map.runJavaScriptForMap(
+            f'{self._rover_path.layerName}.bringToBack();'
+        )
+        self._bring_rover_to_front()
+
+    def set_rover_heading(self, heading_deg: float, length_m: float = 6.0) -> None:
+        """Show heading clockwise from north as a short line from the rover."""
+        heading_deg, length_m = float(heading_deg), float(length_m)
+        if not (math.isfinite(heading_deg) and math.isfinite(length_m) and length_m > 0.0):
+            raise ValueError(
+                'heading and indicator length must be finite; length must be positive'
+            )
+        if self._frame is None or self._rover_latlon is None:
+            raise RuntimeError('local frame and rover position are required before heading')
+
+        rover_enu = self._frame.to_enu(*self._rover_latlon)
+        angle = math.radians(heading_deg)
+        tip = self._frame.to_wgs84(
+            rover_enu.east_m + math.sin(angle) * length_m,
+            rover_enu.north_m + math.cos(angle) * length_m,
+        )
+        latlngs = [list(self._rover_latlon), [tip.lat_deg, tip.lon_deg]]
+        encoded = json.dumps(latlngs)
+
+        if self._heading_line is None:
+            self._heading_line = L.polyline(latlngs, {
+                'color': '#111827', 'weight': 5, 'opacity': 1.0,
+            })
+            self._map.addLayer(self._heading_line)
+            self._heading_line.bindTooltip(f'Heading {heading_deg:.0f} degrees')
+        else:
+            self._map.runJavaScriptForMap(
+                f'{self._heading_line.layerName}.setLatLngs({encoded});'
+                f'{self._heading_line.layerName}.setTooltipContent('
+                f'{json.dumps(f"Heading {heading_deg:.0f} degrees")});'
+            )
+        self._bring_rover_to_front()
+
+    def clear_rover_track(self) -> None:
+        """Remove traveled path and heading while keeping the rover marker."""
+        for layer_name in ('_rover_path', '_heading_line'):
+            layer = getattr(self, layer_name)
+            if layer is not None:
+                self._map.removeLayer(layer)
+                setattr(self, layer_name, None)
+
+    def set_obstacle_enu(self, east_m: float, north_m: float,
+                         radius_m: float, clearance_m: float = 0.0) -> None:
+        """Draw a physical obstacle and its inflated ENU safety boundary."""
+        values = tuple(
+            float(value)
+            for value in (east_m, north_m, radius_m, clearance_m)
+        )
+        east_m, north_m, radius_m, clearance_m = values
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError('obstacle values must be finite')
+        if radius_m <= 0.0 or clearance_m < 0.0:
+            raise ValueError(
+                'obstacle radius must be positive and clearance non-negative'
+            )
+        if self._frame is None:
+            raise RuntimeError('local frame is required before drawing an obstacle')
+        spec = (east_m, north_m, radius_m, clearance_m)
+        if spec == self._obstacle_spec:
+            return
+
+        self.clear_obstacle()
+        center = self._frame.to_wgs84(east_m, north_m)
+        latlng = [center.lat_deg, center.lon_deg]
+        self._obstacle_safety = L.circle(latlng, {
+            'radius': radius_m + clearance_m,
+            'color': '#f59e0b',
+            'weight': 2,
+            'dashArray': '6 5',
+            'fillOpacity': 0.08,
+        })
+        self._obstacle = L.circle(latlng, {
+            'radius': radius_m,
+            'color': '#7f1d1d',
+            'weight': 3,
+            'fillColor': '#dc2626',
+            'fillOpacity': 0.45,
+        })
+        self._map.addLayer(self._obstacle_safety)
+        self._map.addLayer(self._obstacle)
+        self._obstacle.bindTooltip('Simulated obstacle')
+        self._obstacle_safety.bindTooltip('Obstacle safety boundary')
+        self._obstacle_spec = spec
+
+    def clear_obstacle(self) -> None:
+        """Remove the obstacle and its safety boundary from the map."""
+        for layer_name in ('_obstacle', '_obstacle_safety'):
+            layer = getattr(self, layer_name)
+            if layer is not None:
+                self._map.removeLayer(layer)
+                setattr(self, layer_name, None)
+        self._obstacle_spec = None
+
+    def set_planned_route_enu(self, points: Iterable) -> None:
+        """Draw the remaining ENU route, including obstacle detours."""
+        if self._frame is None:
+            raise RuntimeError('local frame is required before drawing a route')
+        geographic_points = []
+        if self._rover_latlon is not None:
+            geographic_points.append(list(self._rover_latlon))
+        for east_m, north_m in points:
+            position = self._frame.to_wgs84(float(east_m), float(north_m))
+            geographic_points.append([position.lat_deg, position.lon_deg])
+
+        if len(geographic_points) < 2:
+            if self._planned_route is not None:
+                self._map.removeLayer(self._planned_route)
+                self._planned_route = None
+            return
+
+        encoded = json.dumps(geographic_points)
+        if self._planned_route is None:
+            self._planned_route = L.polyline(geographic_points, {
+                'color': '#2563eb',
+                'weight': 3,
+                'opacity': 0.9,
+                'dashArray': '8 6',
+            })
+            self._map.addLayer(self._planned_route)
+            self._planned_route.bindTooltip('Planned route')
+        else:
+            self._map.runJavaScriptForMap(
+                f'{self._planned_route.layerName}.setLatLngs({encoded});'
+            )
+        self._map.runJavaScriptForMap(
+            f'{self._planned_route.layerName}.bringToBack();'
+        )
+        self._bring_rover_to_front()
+
     def set_crosshair_cursor(self, enabled: bool) -> None:
         """Crosshair over the map (True) or Leaflet's default grab cursor (False)."""
         cursor = "'crosshair'" if enabled else "''"
@@ -247,6 +413,9 @@ class OfflineMapWidget(QWidget):
             self._map.removeLayer(self._rover)
             self._rover = None
         self._rover_latlon = None
+        if self._heading_line is not None:
+            self._map.removeLayer(self._heading_line)
+            self._heading_line = None
         self._refresh_banner()
 
     # -- selection -----------------------------------------------------------
@@ -296,8 +465,18 @@ class OfflineMapWidget(QWidget):
             self._map.addLayer(marker)
             marker.bindTooltip(_js_string_body(wp.name))
             self._markers[wp.id] = marker
-        if self._rover is not None:  # keep the rover on top of waypoint markers
-            self._map.runJavaScriptForMap(f'{self._rover.layerName}.bringToFront();')
+        self._bring_rover_to_front()
+
+    def _bring_rover_to_front(self) -> None:
+        """Keep the heading and rover visible above paths and waypoint markers."""
+        if self._heading_line is not None:
+            self._map.runJavaScriptForMap(
+                f'{self._heading_line.layerName}.bringToFront();'
+            )
+        if self._rover is not None:
+            self._map.runJavaScriptForMap(
+                f'{self._rover.layerName}.bringToFront();'
+            )
 
     def _refresh_banner(self) -> None:
         if self._source is None:

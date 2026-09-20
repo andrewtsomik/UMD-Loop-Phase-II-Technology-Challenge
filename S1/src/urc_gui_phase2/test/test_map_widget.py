@@ -164,6 +164,44 @@ def test_rover_from_local_frame(widget):
     assert widget._rover is None
 
 
+def test_rover_path_heading_and_reset(widget):
+    frame = LocalFrame(*MDRS)
+    second = frame.to_wgs84(10.0, 0.0)
+    widget.set_local_frame(frame)
+    widget.set_rover_position(second.lat_deg, second.lon_deg)
+    widget.set_rover_path([MDRS, (second.lat_deg, second.lon_deg)])
+    widget.set_rover_heading(90.0)
+
+    assert widget._rover_path is not None
+    assert widget._heading_line is not None
+
+    widget.clear_rover_track()
+    assert widget._rover_path is None
+    assert widget._heading_line is None
+    assert widget._rover is not None
+    widget.clear_rover()
+
+
+def test_obstacle_and_planned_detour_layers(widget):
+    frame = LocalFrame(*MDRS)
+    widget.set_local_frame(frame)
+    widget.set_rover_position(*MDRS)
+
+    widget.set_obstacle_enu(15.0, 0.0, 3.0, 2.0)
+    widget.set_planned_route_enu([(15.0, 6.0), (30.0, 0.0)])
+
+    assert widget._obstacle is not None
+    assert widget._obstacle_safety is not None
+    assert widget._planned_route is not None
+
+    widget.set_planned_route_enu([])
+    widget.clear_obstacle()
+    assert widget._planned_route is None
+    assert widget._obstacle is None
+    assert widget._obstacle_safety is None
+    widget.clear_rover()
+
+
 def test_marker_outside_coverage_is_flagged_in_banner(widget, mission):
     widget.set_waypoints(mission.waypoints)
     widget.set_rover_position(MDRS[0] + 1.0, MDRS[1])
