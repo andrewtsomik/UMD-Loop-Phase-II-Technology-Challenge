@@ -9,7 +9,7 @@
 #define LED_FAR    18     // red
 #define LED_EXACT  13     // green
 
-#define TARGET      0x3FF44578u
+#define TARGET      0x3FF44564u
 #define NEAR_BAND   16u
 
 // ---------- UART0 receive, register level ----------
