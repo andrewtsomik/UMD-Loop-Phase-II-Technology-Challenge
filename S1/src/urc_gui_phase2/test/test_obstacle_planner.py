@@ -8,9 +8,32 @@ from urc_gui_phase2.obstacle_planner import (
     CircleObstacle,
     UnreachableTargetError,
     plan_route,
+    plan_route_around_obstacles,
     point_to_segment_distance,
     route_length,
 )
+
+
+def test_multiple_obstacles_produce_a_multi_leg_safe_route():
+    obstacles = (
+        CircleObstacle(8.0, 0.0, 2.0),
+        CircleObstacle(18.0, -2.0, 2.0),
+        CircleObstacle(28.0, 2.0, 2.0),
+    )
+
+    route = plan_route_around_obstacles(
+        (0.0, 0.0), (38.0, 0.0), obstacles, 1.0
+    )
+
+    assert route[-1] == (38.0, 0.0)
+    assert len(route) >= 3
+    segment_start = (0.0, 0.0)
+    for segment_goal in route:
+        for obstacle in obstacles:
+            assert point_to_segment_distance(
+                obstacle.center, segment_start, segment_goal
+            ) >= obstacle.radius_m + 1.0
+        segment_start = segment_goal
 
 
 OBSTACLE = CircleObstacle(10.0, 0.0, 2.0)

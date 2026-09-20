@@ -7,9 +7,9 @@ start publishing rather than invent a site.
 
 Publishes sensor_msgs/NavSatFix on /rover/fix and authoritative JSON mission
 state on /mission/status. Subscribes to the operator's active target
-(geometry_msgs/PoseStamped, ENU metres, frame 'map') and drives straight
-toward it at `speed_mps`. A circular local-frame obstacle is inflated by a
-safety clearance; blocked straight paths receive a planned detour.
+(geometry_msgs/PoseStamped, ENU metres, frame 'map') and drives toward it at
+`speed_mps`. A configurable course of circular local-frame obstacles is
+inflated by a safety clearance; blocked paths receive a multi-leg detour.
 """
 
 import json
@@ -24,7 +24,7 @@ from urc_gui_phase2.coordinate_convert import LocalFrame
 from urc_gui_phase2.obstacle_planner import (
     CircleObstacle,
     UnreachableTargetError,
-    plan_route,
+    plan_route_around_obstacles,
     route_length,
 )
 
@@ -40,10 +40,22 @@ class RoverSimNode(Node):
         self.declare_parameter('spawn_lon_deg', float('nan'))
         self.declare_parameter('speed_mps', 1.0)
         self.declare_parameter('obstacle_enabled', True)
-        self.declare_parameter('obstacle_east_m', 15.0)
+        self.declare_parameter('obstacle_east_m', 8.0)
         self.declare_parameter('obstacle_north_m', 0.0)
         self.declare_parameter('obstacle_radius_m', 3.0)
         self.declare_parameter('obstacle_clearance_m', 2.0)
+        self.declare_parameter('obstacle_2_east_m', 16.0)
+        self.declare_parameter('obstacle_2_north_m', 5.0)
+        self.declare_parameter('obstacle_2_radius_m', 2.5)
+        self.declare_parameter('obstacle_3_east_m', 24.0)
+        self.declare_parameter('obstacle_3_north_m', -4.0)
+        self.declare_parameter('obstacle_3_radius_m', 2.8)
+        self.declare_parameter('obstacle_4_east_m', 32.0)
+        self.declare_parameter('obstacle_4_north_m', 4.0)
+        self.declare_parameter('obstacle_4_radius_m', 2.4)
+        self.declare_parameter('obstacle_5_east_m', 40.0)
+        self.declare_parameter('obstacle_5_north_m', -3.0)
+        self.declare_parameter('obstacle_5_radius_m', 2.6)
         lat = self.get_parameter('spawn_lat_deg').value
         lon = self.get_parameter('spawn_lon_deg').value
         self._speed = float(self.get_parameter('speed_mps').value)
@@ -66,14 +78,22 @@ class RoverSimNode(Node):
         self._obstacle_clearance = float(
             self.get_parameter('obstacle_clearance_m').value
         )
-        self._obstacle = None
+        self._obstacles = []
         if self.get_parameter('obstacle_enabled').value:
             try:
-                self._obstacle = CircleObstacle(
-                    self.get_parameter('obstacle_east_m').value,
-                    self.get_parameter('obstacle_north_m').value,
-                    self.get_parameter('obstacle_radius_m').value,
-                )
+                obstacle_parameters = [
+                    'obstacle',
+                    'obstacle_2',
+                    'obstacle_3',
+                    'obstacle_4',
+                    'obstacle_5',
+                ]
+                for prefix in obstacle_parameters:
+                    self._obstacles.append(CircleObstacle(
+                        self.get_parameter(f'{prefix}_east_m').value,
+                        self.get_parameter(f'{prefix}_north_m').value,
+                        self.get_parameter(f'{prefix}_radius_m').value,
+                    ))
                 if (
                     not math.isfinite(self._obstacle_clearance)
                     or self._obstacle_clearance < 0.0
@@ -122,11 +142,11 @@ class RoverSimNode(Node):
         goal = (east_m, north_m)
         try:
             route = (
-                (goal,) if self._obstacle is None else
-                plan_route(
+                (goal,) if not self._obstacles else
+                plan_route_around_obstacles(
                     (self._east, self._north),
                     goal,
-                    self._obstacle,
+                    self._obstacles,
                     self._obstacle_clearance,
                 )
             )
@@ -278,14 +298,15 @@ class RoverSimNode(Node):
                     self._target[0] - self._east,
                     self._target[1] - self._north,
                 )
-        obstacle_data = None
-        if self._obstacle is not None:
-            obstacle_data = {
-                'east_m': self._obstacle.east_m,
-                'north_m': self._obstacle.north_m,
-                'radius_m': self._obstacle.radius_m,
+        obstacles_data = [
+            {
+                'east_m': obstacle.east_m,
+                'north_m': obstacle.north_m,
+                'radius_m': obstacle.radius_m,
                 'clearance_m': self._obstacle_clearance,
             }
+            for obstacle in self._obstacles
+        ]
         status = String()
         status.data = json.dumps(
             {
@@ -299,7 +320,8 @@ class RoverSimNode(Node):
                     {'east_m': east, 'north_m': north}
                     for east, north in self._route
                 ],
-                'obstacle': obstacle_data,
+                'obstacle': obstacles_data[0] if obstacles_data else None,
+                'obstacles': obstacles_data,
                 'planning_error': self._planning_error,
             }
         )

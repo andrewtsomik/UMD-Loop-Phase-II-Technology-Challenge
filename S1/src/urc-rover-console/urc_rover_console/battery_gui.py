@@ -710,7 +710,10 @@ class RoverConsole(QMainWindow):
             distance = data["distance_m"]
             avoidance_planned = data.get("avoidance_planned", False)
             route_data = data.get("route", [])
-            obstacle = data.get("obstacle")
+            obstacles_data = data.get("obstacles")
+            if obstacles_data is None:
+                legacy_obstacle = data.get("obstacle")
+                obstacles_data = [] if legacy_obstacle is None else [legacy_obstacle]
             planning_error = data.get("planning_error")
             if state not in valid_states or not isinstance(has_target, bool):
                 raise ValueError("invalid state or target flag")
@@ -729,9 +732,12 @@ class RoverConsole(QMainWindow):
                 if not (math.isfinite(east_m) and math.isfinite(north_m)):
                     raise ValueError("invalid planned route point")
                 route.append((east_m, north_m))
-            if obstacle is not None:
+            if not isinstance(obstacles_data, list):
+                raise ValueError("invalid obstacles")
+            obstacles = []
+            for obstacle_data in obstacles_data:
                 obstacle = {
-                    name: float(obstacle[name])
+                    name: float(obstacle_data[name])
                     for name in (
                         "east_m",
                         "north_m",
@@ -743,6 +749,7 @@ class RoverConsole(QMainWindow):
                     raise ValueError("invalid obstacle")
                 if obstacle["radius_m"] <= 0.0 or obstacle["clearance_m"] < 0.0:
                     raise ValueError("invalid obstacle size")
+                obstacles.append(obstacle)
             if planning_error is not None and not isinstance(planning_error, str):
                 raise ValueError("invalid planning error")
         except (json.JSONDecodeError, KeyError, TypeError, ValueError):
@@ -759,8 +766,7 @@ class RoverConsole(QMainWindow):
             else "--"
         )
         if self.mission_controller.frame is not None:
-            if obstacle is not None:
-                self.map_widget.set_obstacle_enu(**obstacle)
+            self.map_widget.set_obstacles_enu(obstacles)
             self.map_widget.set_planned_route_enu(route)
         if state != previous_state:
             self.event_log.record(
@@ -780,7 +786,7 @@ class RoverConsole(QMainWindow):
                         {"east_m": east, "north_m": north}
                         for east, north in route
                     ],
-                    obstacle=obstacle,
+                    obstacles=obstacles,
                 )
             if state == "ABORTED" and active is not None:
                 self.event_log.record(

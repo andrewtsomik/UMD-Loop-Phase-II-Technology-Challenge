@@ -50,13 +50,18 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "obstacle_east_m",
-                default_value="15.0",
+                default_value="8.0",
                 description="Obstacle center east of spawn in REP 103 metres",
             ),
             DeclareLaunchArgument(
                 "obstacle_north_m",
                 default_value="0.0",
                 description="Obstacle center north of spawn in REP 103 metres",
+            ),
+            DeclareLaunchArgument(
+                "speed_mps",
+                default_value="8.0",
+                description="Presentation rover speed in metres per second",
             ),
             Node(
                 package="urc_rover_console",
@@ -73,7 +78,9 @@ def generate_launch_description():
                     {
                         "spawn_lat_deg": spawn_latitude,
                         "spawn_lon_deg": spawn_longitude,
-                        "speed_mps": 3.0,
+                        "speed_mps": ParameterValue(
+                            LaunchConfiguration("speed_mps"), value_type=float
+                        ),
                         "obstacle_enabled": obstacle_enabled,
                         "obstacle_east_m": obstacle_east,
                         "obstacle_north_m": obstacle_north,

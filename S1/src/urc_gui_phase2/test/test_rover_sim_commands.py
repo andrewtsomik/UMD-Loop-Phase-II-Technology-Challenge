@@ -45,7 +45,7 @@ def make_simulator():
     simulator._route = [(20.0, 10.0)]
     simulator._avoidance_planned = False
     simulator._planning_error = None
-    simulator._obstacle = None
+    simulator._obstacles = []
     simulator._obstacle_clearance = 1.0
     simulator._motion_enabled = True
     simulator._state = 'NAVIGATING'
@@ -176,7 +176,7 @@ def test_blocked_target_gets_a_safe_detour_route():
     simulator._east = 0.0
     simulator._north = 0.0
     simulator._motion_enabled = False
-    simulator._obstacle = CircleObstacle(10.0, 0.0, 2.0)
+    simulator._obstacles = [CircleObstacle(10.0, 0.0, 2.0)]
     simulator._obstacle_clearance = 1.0
     target = SimpleNamespace(
         header=SimpleNamespace(frame_id='map'),
@@ -196,7 +196,7 @@ def test_target_inside_obstacle_is_reported_as_unreachable():
     simulator._east = 0.0
     simulator._north = 0.0
     simulator._motion_enabled = False
-    simulator._obstacle = CircleObstacle(10.0, 0.0, 2.0)
+    simulator._obstacles = [CircleObstacle(10.0, 0.0, 2.0)]
     simulator._obstacle_clearance = 1.0
     target = SimpleNamespace(
         header=SimpleNamespace(frame_id='map'),

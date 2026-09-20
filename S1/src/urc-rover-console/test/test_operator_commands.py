@@ -170,6 +170,9 @@ class FakeMapWidget:
     def set_obstacle_enu(self, **obstacle):
         self._events.append(('map', 'obstacle', obstacle))
 
+    def set_obstacles_enu(self, obstacles):
+        self._events.append(('map', 'obstacles', tuple(obstacles)))
+
     def set_planned_route_enu(self, route):
         self._events.append(('map', 'route', tuple(route)))
 
@@ -388,7 +391,7 @@ def test_avoiding_status_displays_obstacle_route():
     )
 
     assert console.banner.text == 'AVOIDING OBSTACLE — East Site'
-    assert console.events[-2][0:2] == ('map', 'obstacle')
+    assert console.events[-2][0:2] == ('map', 'obstacles')
     assert console.events[-1][0:2] == ('map', 'route')
 
 

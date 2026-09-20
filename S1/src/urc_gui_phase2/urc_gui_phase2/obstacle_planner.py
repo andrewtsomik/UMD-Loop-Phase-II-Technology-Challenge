@@ -168,3 +168,49 @@ def plan_route(start: Point, goal: Point, obstacle: CircleObstacle,
             "no safe detour was found around the obstacle"
         )
     return min(candidates, key=lambda candidate: candidate[0])[1]
+
+
+def plan_route_around_obstacles(start: Point, goal: Point,
+                                obstacles: Iterable[CircleObstacle],
+                                clearance_m: float) -> Tuple[Point, ...]:
+    """Plan a route around a separated collection of circular obstacles.
+
+    Each pass finds the first blocked route segment and inserts the safe
+    detour produced by :func:`plan_route`. The complete route is checked again
+    after every insertion so a detour cannot silently cross another obstacle.
+    The presentation course deliberately keeps obstacles separated; heavily
+    overlapping circles should be handled by a full path planner instead.
+    """
+    start = _finite_point(start, "start")
+    goal = _finite_point(goal, "goal")
+    obstacles = tuple(obstacles)
+    if not obstacles:
+        return (goal,)
+
+    route = [goal]
+    max_insertions = max(8, len(obstacles) * 8)
+    for _ in range(max_insertions):
+        segment_start = start
+        inserted = False
+        for segment_index, segment_goal in enumerate(tuple(route)):
+            for obstacle in obstacles:
+                inflated_radius = obstacle.radius_m + float(clearance_m)
+                if point_to_segment_distance(
+                        obstacle.center, segment_start, segment_goal
+                ) >= inflated_radius:
+                    continue
+                detour_route = plan_route(
+                    segment_start, segment_goal, obstacle, clearance_m
+                )
+                route.insert(segment_index, detour_route[0])
+                inserted = True
+                break
+            if inserted:
+                break
+            segment_start = segment_goal
+        if not inserted:
+            return tuple(route)
+
+    raise UnreachableTargetError(
+        "no stable route was found through the obstacle course"
+    )
