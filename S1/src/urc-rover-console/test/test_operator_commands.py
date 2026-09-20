@@ -151,6 +151,12 @@ class FakeMapWidget:
     def clear_rover_track(self):
         self._events.append(('map', 'clear_rover_track'))
 
+    def set_obstacle_enu(self, **obstacle):
+        self._events.append(('map', 'obstacle', obstacle))
+
+    def set_planned_route_enu(self, route):
+        self._events.append(('map', 'route', tuple(route)))
+
 
 class FakeConsole:
     send_command = RoverConsole.send_command
@@ -259,14 +265,16 @@ def test_removing_active_waypoint_sends_target_cancellation():
     assert console.events == [('command', 'CANCEL_TARGET')]
 
 
-def mission_status(state, has_target, distance_m):
+def mission_status(state, has_target, distance_m, **extra):
     """Build the JSON message published by the coordinate rover."""
+    payload = {
+        'state': state,
+        'has_target': has_target,
+        'distance_m': distance_m,
+    }
+    payload.update(extra)
     return SimpleNamespace(
-        data=json.dumps({
-            'state': state,
-            'has_target': has_target,
-            'distance_m': distance_m,
-        })
+        data=json.dumps(payload)
     )
 
 
@@ -322,6 +330,56 @@ def test_invalid_mission_status_does_not_change_navigation_labels():
 
     assert console.nav_state.text == ''
     assert console.feedback.text == 'INVALID MISSION STATUS MESSAGE'
+
+
+def test_avoiding_status_displays_obstacle_route():
+    active = SimpleNamespace(id='wp-1', name='East Site')
+    console = FakeConsole(active_target=active)
+
+    console.update_mission_status(
+        mission_status(
+            'AVOIDING',
+            True,
+            24.0,
+            avoidance_planned=True,
+            route=[
+                {'east_m': 15.0, 'north_m': 6.0},
+                {'east_m': 30.0, 'north_m': 0.0},
+            ],
+            obstacle={
+                'east_m': 15.0,
+                'north_m': 0.0,
+                'radius_m': 3.0,
+                'clearance_m': 2.0,
+            },
+            planning_error=None,
+        )
+    )
+
+    assert console.banner.text == 'AVOIDING OBSTACLE — East Site'
+    assert console.events[-2][0:2] == ('map', 'obstacle')
+    assert console.events[-1][0:2] == ('map', 'route')
+
+
+def test_unreachable_status_records_failed_target_result():
+    active = SimpleNamespace(id='wp-1', name='Blocked Site')
+    console = FakeConsole(active_target=active)
+
+    console.update_mission_status(
+        mission_status(
+            'UNREACHABLE',
+            False,
+            None,
+            planning_error='goal lies inside the safety boundary',
+        )
+    )
+
+    assert console.banner.text == 'TARGET UNREACHABLE — Blocked Site'
+    assert 'goal lies inside' in console.feedback.text
+    assert console.event_log.events[-1][0:2] == (
+        'target_result',
+        'unreachable',
+    )
 
 
 def test_safety_stop_is_sent_only_once_for_one_outage():

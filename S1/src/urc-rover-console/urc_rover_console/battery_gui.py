@@ -608,7 +608,7 @@ class RoverConsole(QMainWindow):
 
         if failures:
             failure_text = ", ".join(failures).upper()
-            if self._current_mission_state == "NAVIGATING":
+            if self._current_mission_state in ("NAVIGATING", "AVOIDING"):
                 self.send_safety_stop_once(failures)
             if self._safety_stop_sent:
                 self.banner.setText(
@@ -689,9 +689,11 @@ class RoverConsole(QMainWindow):
             "IDLE",
             "READY",
             "NAVIGATING",
+            "AVOIDING",
             "STOPPED",
             "ARRIVED",
             "ABORTED",
+            "UNREACHABLE",
         }
 
         try:
@@ -699,12 +701,43 @@ class RoverConsole(QMainWindow):
             state = data["state"]
             has_target = data["has_target"]
             distance = data["distance_m"]
+            avoidance_planned = data.get("avoidance_planned", False)
+            route_data = data.get("route", [])
+            obstacle = data.get("obstacle")
+            planning_error = data.get("planning_error")
             if state not in valid_states or not isinstance(has_target, bool):
                 raise ValueError("invalid state or target flag")
+            if not isinstance(avoidance_planned, bool):
+                raise ValueError("invalid avoidance flag")
             if distance is not None:
                 distance = float(distance)
                 if not math.isfinite(distance) or distance < 0.0:
                     raise ValueError("invalid target distance")
+            if not isinstance(route_data, list):
+                raise ValueError("invalid planned route")
+            route = []
+            for point in route_data:
+                east_m = float(point["east_m"])
+                north_m = float(point["north_m"])
+                if not (math.isfinite(east_m) and math.isfinite(north_m)):
+                    raise ValueError("invalid planned route point")
+                route.append((east_m, north_m))
+            if obstacle is not None:
+                obstacle = {
+                    name: float(obstacle[name])
+                    for name in (
+                        "east_m",
+                        "north_m",
+                        "radius_m",
+                        "clearance_m",
+                    )
+                }
+                if not all(math.isfinite(value) for value in obstacle.values()):
+                    raise ValueError("invalid obstacle")
+                if obstacle["radius_m"] <= 0.0 or obstacle["clearance_m"] < 0.0:
+                    raise ValueError("invalid obstacle size")
+            if planning_error is not None and not isinstance(planning_error, str):
+                raise ValueError("invalid planning error")
         except (json.JSONDecodeError, KeyError, TypeError, ValueError):
             self.feedback.setText("INVALID MISSION STATUS MESSAGE")
             return
@@ -713,7 +746,15 @@ class RoverConsole(QMainWindow):
         previous_state = self._current_mission_state
         self._current_mission_state = state
         active = self.mission_controller.active_target()
-        target_name = active.name if has_target and active is not None else "--"
+        target_name = (
+            active.name
+            if active is not None and (has_target or state == "UNREACHABLE")
+            else "--"
+        )
+        if self.mission_controller.frame is not None:
+            if obstacle is not None:
+                self.map_widget.set_obstacle_enu(**obstacle)
+            self.map_widget.set_planned_route_enu(route)
         if state != previous_state:
             self.event_log.record(
                 "mission",
@@ -723,12 +764,31 @@ class RoverConsole(QMainWindow):
                 target_name=target_name,
                 distance_m=distance,
             )
+            if state == "READY" and avoidance_planned:
+                self.event_log.record(
+                    "planner",
+                    "obstacle_detour_planned",
+                    target_name=target_name,
+                    remaining_route=[
+                        {"east_m": east, "north_m": north}
+                        for east, north in route
+                    ],
+                    obstacle=obstacle,
+                )
             if state == "ABORTED" and active is not None:
                 self.event_log.record(
                     "target_result",
                     "aborted",
                     waypoint_id=active.id,
                     waypoint_name=active.name,
+                )
+            elif state == "UNREACHABLE" and active is not None:
+                self.event_log.record(
+                    "target_result",
+                    "unreachable",
+                    waypoint_id=active.id,
+                    waypoint_name=active.name,
+                    reason=planning_error,
                 )
         self.target.setText(f"Target: {target_name}")
         self.nav_state.setText(f"State: {state}")
@@ -738,8 +798,19 @@ class RoverConsole(QMainWindow):
 
         if state == "ARRIVED":
             self.banner.setText("TARGET REACHED — ROVER STOPPED")
+        elif state == "AVOIDING":
+            self.banner.setText(
+                f"AVOIDING OBSTACLE — {target_name}"
+            )
+        elif state == "UNREACHABLE":
+            self.banner.setText(
+                f"TARGET UNREACHABLE — {target_name}"
+            )
         elif state == "READY":
-            self.banner.setText(f"READY — {target_name} — PRESS START")
+            ready_text = " · OBSTACLE DETOUR PLANNED" if avoidance_planned else ""
+            self.banner.setText(
+                f"READY — {target_name}{ready_text} — PRESS START"
+            )
         else:
             self.banner.setText(f"{state} — {target_name}")
 
@@ -755,6 +826,10 @@ class RoverConsole(QMainWindow):
 
         if state == "ABORTED":
             self.feedback.setText("Rover acknowledged abort command")
+        elif state == "UNREACHABLE":
+            self.feedback.setText(
+                f"Target is unreachable: {planning_error or 'planner rejected it'}"
+            )
 
     def complete_arrived_waypoint(self):
         """Complete one reached target and prepare, but do not start, the next."""

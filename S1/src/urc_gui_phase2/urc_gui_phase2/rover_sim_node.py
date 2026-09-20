@@ -8,7 +8,8 @@ start publishing rather than invent a site.
 Publishes sensor_msgs/NavSatFix on /rover/fix and authoritative JSON mission
 state on /mission/status. Subscribes to the operator's active target
 (geometry_msgs/PoseStamped, ENU metres, frame 'map') and drives straight
-toward it at `speed_mps`, stopping on arrival.
+toward it at `speed_mps`. A circular local-frame obstacle is inflated by a
+safety clearance; blocked straight paths receive a planned detour.
 """
 
 import json
@@ -20,6 +21,12 @@ from rclpy.node import Node
 from sensor_msgs.msg import NavSatFix, NavSatStatus
 from std_msgs.msg import String
 from urc_gui_phase2.coordinate_convert import LocalFrame
+from urc_gui_phase2.obstacle_planner import (
+    CircleObstacle,
+    UnreachableTargetError,
+    plan_route,
+    route_length,
+)
 
 PERIOD_S = 0.2
 ARRIVAL_RADIUS_M = 1.0
@@ -32,11 +39,19 @@ class RoverSimNode(Node):
         self.declare_parameter('spawn_lat_deg', float('nan'))
         self.declare_parameter('spawn_lon_deg', float('nan'))
         self.declare_parameter('speed_mps', 1.0)
+        self.declare_parameter('obstacle_enabled', True)
+        self.declare_parameter('obstacle_east_m', 15.0)
+        self.declare_parameter('obstacle_north_m', 0.0)
+        self.declare_parameter('obstacle_radius_m', 3.0)
+        self.declare_parameter('obstacle_clearance_m', 2.0)
         lat = self.get_parameter('spawn_lat_deg').value
         lon = self.get_parameter('spawn_lon_deg').value
         self._speed = float(self.get_parameter('speed_mps').value)
         self._east = self._north = 0.0
         self._target = None
+        self._route = []
+        self._avoidance_planned = False
+        self._planning_error = None
         self._motion_enabled = False
         self._state = 'IDLE'
         self._frame = None
@@ -48,6 +63,27 @@ class RoverSimNode(Node):
                 'speed_mps must be a positive finite number; publishing nothing'
             )
             return
+        self._obstacle_clearance = float(
+            self.get_parameter('obstacle_clearance_m').value
+        )
+        self._obstacle = None
+        if self.get_parameter('obstacle_enabled').value:
+            try:
+                self._obstacle = CircleObstacle(
+                    self.get_parameter('obstacle_east_m').value,
+                    self.get_parameter('obstacle_north_m').value,
+                    self.get_parameter('obstacle_radius_m').value,
+                )
+                if (
+                    not math.isfinite(self._obstacle_clearance)
+                    or self._obstacle_clearance < 0.0
+                ):
+                    raise ValueError(
+                        'obstacle clearance must be finite and non-negative'
+                    )
+            except (TypeError, ValueError) as error:
+                self.get_logger().error(f'Invalid obstacle configuration: {error}')
+                return
         self._frame = LocalFrame(lat, lon)
         self._pub = self.create_publisher(NavSatFix, '/rover/fix', 10)
         # This status is authoritative because it is calculated by the same
@@ -83,13 +119,44 @@ class RoverSimNode(Node):
             )
             return
 
-        self._target = (east_m, north_m)
-        if not self._motion_enabled:
+        goal = (east_m, north_m)
+        try:
+            route = (
+                (goal,) if self._obstacle is None else
+                plan_route(
+                    (self._east, self._north),
+                    goal,
+                    self._obstacle,
+                    self._obstacle_clearance,
+                )
+            )
+        except UnreachableTargetError as error:
+            self._motion_enabled = False
+            self._target = None
+            self._route = []
+            self._avoidance_planned = False
+            self._planning_error = str(error)
+            self._state = 'UNREACHABLE'
+            self.get_logger().warning(
+                f'Target rejected by obstacle planner: {error}'
+            )
+            return
+
+        self._target = goal
+        self._route = list(route)
+        self._avoidance_planned = len(route) > 1
+        self._planning_error = None
+        if self._motion_enabled:
+            self._state = (
+                'AVOIDING' if self._avoidance_planned else 'NAVIGATING'
+            )
+        else:
             self._state = 'READY'
 
         self.get_logger().info(
             f'Target received: east={self._target[0]:.2f} m, '
-            f'north={self._target[1]:.2f} m'
+            f'north={self._target[1]:.2f} m; '
+            f'route points={len(self._route)}'
         )
 
     def _on_command(self, msg: String) -> None:
@@ -99,13 +166,17 @@ class RoverSimNode(Node):
         if command == 'START_MISSION':
             if self._target is None:
                 self._motion_enabled = False
-                self._state = 'IDLE'
+                self._state = (
+                    'UNREACHABLE' if self._planning_error else 'IDLE'
+                )
                 self.get_logger().warning(
                     'Start ignored because no target is assigned'
                 )
             else:
                 self._motion_enabled = True
-                self._state = 'NAVIGATING'
+                self._state = (
+                    'AVOIDING' if len(self._route) > 1 else 'NAVIGATING'
+                )
                 self.get_logger().info('Motion enabled')
 
         elif command == 'STOP_MISSION':
@@ -118,6 +189,9 @@ class RoverSimNode(Node):
         elif command == 'ABORT_MISSION':
             self._motion_enabled = False
             self._target = None
+            self._route = []
+            self._avoidance_planned = False
+            self._planning_error = None
             self._state = 'ABORTED'
             self.get_logger().warning(
                 'Mission aborted; target cleared'
@@ -126,6 +200,9 @@ class RoverSimNode(Node):
         elif command == 'RESET_MISSION':
             self._motion_enabled = False
             self._target = None
+            self._route = []
+            self._avoidance_planned = False
+            self._planning_error = None
             self._east = 0.0
             self._north = 0.0
             self._state = 'IDLE'
@@ -136,28 +213,48 @@ class RoverSimNode(Node):
         elif command == 'CANCEL_TARGET':
             self._motion_enabled = False
             self._target = None
+            self._route = []
+            self._avoidance_planned = False
+            self._planning_error = None
             self._state = 'IDLE'
             self.get_logger().info(
                 'Active target cancelled'
             )
 
     def _tick(self) -> None:
-        if self._motion_enabled and self._target is not None:
-            de = self._target[0] - self._east
-            dn = self._target[1] - self._north
+        if self._motion_enabled and self._target is not None and self._route:
+            route_point = self._route[0]
+            de = route_point[0] - self._east
+            dn = route_point[1] - self._north
             dist = math.hypot(de, dn)
+            final_leg = len(self._route) == 1
 
-            if dist > ARRIVAL_RADIUS_M:
-                step = min(self._speed * PERIOD_S, dist)
-                self._east += de / dist * step
-                self._north += dn / dist * step
-            else:
+            if final_leg and dist <= ARRIVAL_RADIUS_M:
                 self._motion_enabled = False
+                self._route = []
                 self._state = 'ARRIVED'
                 self.get_logger().info(
                     'Target reached within '
                     f'{ARRIVAL_RADIUS_M:.1f} m tolerance'
                 )
+            else:
+                step = min(self._speed * PERIOD_S, dist)
+                if dist <= step:
+                    # Snap exactly to an intermediate planner waypoint, then
+                    # continue toward the next route point on the next tick.
+                    self._east, self._north = route_point
+                    self._route.pop(0)
+                    if not self._route:
+                        self._motion_enabled = False
+                        self._state = 'ARRIVED'
+                    elif len(self._route) == 1:
+                        self._state = 'NAVIGATING'
+                elif dist > 0.0:
+                    self._east += de / dist * step
+                    self._north += dn / dist * step
+                    self._state = (
+                        'AVOIDING' if len(self._route) > 1 else 'NAVIGATING'
+                    )
 
         geo = self._frame.to_wgs84(self._east, self._north)
         msg = NavSatFix()
@@ -171,10 +268,24 @@ class RoverSimNode(Node):
         # still making every field explicit and easy to inspect with ros2 topic.
         distance_m = None
         if self._target is not None:
-            distance_m = math.hypot(
-                self._target[0] - self._east,
-                self._target[1] - self._north,
-            )
+            if self._route:
+                distance_m = route_length(
+                    (self._east, self._north),
+                    self._route,
+                )
+            else:
+                distance_m = math.hypot(
+                    self._target[0] - self._east,
+                    self._target[1] - self._north,
+                )
+        obstacle_data = None
+        if self._obstacle is not None:
+            obstacle_data = {
+                'east_m': self._obstacle.east_m,
+                'north_m': self._obstacle.north_m,
+                'radius_m': self._obstacle.radius_m,
+                'clearance_m': self._obstacle_clearance,
+            }
         status = String()
         status.data = json.dumps(
             {
@@ -183,6 +294,13 @@ class RoverSimNode(Node):
                 'distance_m': (
                     None if distance_m is None else round(distance_m, 2)
                 ),
+                'avoidance_planned': self._avoidance_planned,
+                'route': [
+                    {'east_m': east, 'north_m': north}
+                    for east, north in self._route
+                ],
+                'obstacle': obstacle_data,
+                'planning_error': self._planning_error,
             }
         )
         self._status_pub.publish(status)
