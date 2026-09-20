@@ -4,6 +4,8 @@ import sys
 import time
 
 import rclpy
+from rclpy._rclpy_pybind11 import RCLError
+from rclpy.executors import SingleThreadedExecutor
 from std_msgs.msg import String
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import (
@@ -32,6 +34,14 @@ from urc_gui_phase2.operator_gui_node import OperatorGuiNode
 from urc_gui_phase2.rover_track import RoverTrack
 
 DATA_STALE_AFTER_S = 2.5
+SPIN_PERIOD_MS = 10
+MAX_SPINS_PER_TICK = 10
+
+
+def spin_ready_callbacks(executor, max_callbacks=MAX_SPINS_PER_TICK):
+    """Process a bounded number of ROS callbacks without blocking Qt."""
+    for _ in range(max_callbacks):
+        executor.spin_once(timeout_sec=0)
 
 
 class RoverConsole(QMainWindow):
@@ -85,9 +95,6 @@ class RoverConsole(QMainWindow):
             String, "/mission/status", self.update_mission_status, 10)
         self.command_publisher = node.create_publisher(String, "/operator/command", 10)
 
-        self.ros_timer = QTimer(self)
-        self.ros_timer.timeout.connect(lambda: rclpy.spin_once(self.node, timeout_sec=0))
-        self.ros_timer.start(50)
         self.ui_timer = QTimer(self)
         self.ui_timer.timeout.connect(self.update_clock_and_link)
         self.ui_timer.start(250)
@@ -905,13 +912,37 @@ class RoverConsole(QMainWindow):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = OperatorGuiNode()
     app = QApplication(sys.argv)
-    window = RoverConsole(node); window.show()
+    node = OperatorGuiNode()
+    executor = SingleThreadedExecutor()
+    executor.add_node(node)
+    shutting_down = False
+
+    def spin_ros():
+        """Give ready ROS callbacks a short, bounded turn in the Qt loop."""
+        if shutting_down:
+            return
+        try:
+            spin_ready_callbacks(executor)
+        except RCLError:
+            # ROS can become unavailable while Qt is closing the application.
+            return
+
+    ros_timer = QTimer()
+    ros_timer.timeout.connect(spin_ros)
+    ros_timer.start(SPIN_PERIOD_MS)
+
+    window = RoverConsole(node)
+    window.show()
     try:
         code = app.exec_()
     finally:
-        node.destroy_node(); rclpy.shutdown()
+        shutting_down = True
+        ros_timer.stop()
+        executor.shutdown()
+        node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
     sys.exit(code)
 
 

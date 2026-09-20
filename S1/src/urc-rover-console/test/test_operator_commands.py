@@ -27,12 +27,28 @@ map_widget_stub.OfflineMapWidget = _UnusedMapWidget
 operator_node_stub = ModuleType('urc_gui_phase2.operator_gui_node')
 operator_node_stub.OperatorGuiNode = _UnusedOperatorGuiNode
 rclpy_stub = ModuleType('rclpy')
+rclpy_executor_stub = ModuleType('rclpy.executors')
+rclpy_bindings_stub = ModuleType('rclpy._rclpy_pybind11')
+
+
+class _UnusedSingleThreadedExecutor:
+    pass
+
+
+class _RCLError(Exception):
+    pass
+
+
+rclpy_executor_stub.SingleThreadedExecutor = _UnusedSingleThreadedExecutor
+rclpy_bindings_stub.RCLError = _RCLError
 std_msgs_stub = ModuleType('std_msgs')
 std_msgs_msg_stub = ModuleType('std_msgs.msg')
 std_msgs_msg_stub.String = _String
 
 stubs = {
     'rclpy': rclpy_stub,
+    'rclpy.executors': rclpy_executor_stub,
+    'rclpy._rclpy_pybind11': rclpy_bindings_stub,
     'std_msgs': std_msgs_stub,
     'std_msgs.msg': std_msgs_msg_stub,
     'urc_gui_phase2.map_widget': map_widget_stub,
@@ -45,7 +61,7 @@ original_modules = {
 sys.modules.update(stubs)
 
 try:
-    from urc_rover_console.battery_gui import RoverConsole
+    from urc_rover_console.battery_gui import RoverConsole, spin_ready_callbacks
 finally:
     for name, original in original_modules.items():
         if original is None:
@@ -192,6 +208,21 @@ class FakeConsole:
         self._current_mission_state = 'IDLE'
         self._completing_arrival = False
         self._safety_stop_sent = False
+
+
+def test_ros_callback_processing_is_bounded_per_qt_timer_tick():
+    class FakeExecutor:
+        def __init__(self):
+            self.timeouts = []
+
+        def spin_once(self, timeout_sec):
+            self.timeouts.append(timeout_sec)
+
+    executor = FakeExecutor()
+
+    spin_ready_callbacks(executor, max_callbacks=3)
+
+    assert executor.timeouts == [0, 0, 0]
 
 
 def test_start_without_active_waypoint_is_blocked():
