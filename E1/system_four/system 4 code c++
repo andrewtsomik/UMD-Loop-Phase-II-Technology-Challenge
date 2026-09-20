@@ -1,0 +1,12 @@
+#include <Wire.h>
+void setup() {
+    Serial.begin(115200); //starts communication and gives baud rate for communication speed
+
+
+    Wire.begin(21, 22); //starts i2c and assigns sda and sdl for gpio 21 and 22
+}
+void loop() {
+int value = analogRead(34); //reads voltage using 34pin and assigns it a value
+Serial.println(value); //prints the value
+delay(10); //delays by 10 milliseconds
+}
