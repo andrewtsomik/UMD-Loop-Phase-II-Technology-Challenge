@@ -1,19 +1,43 @@
-#define SIGNAL_PIN 34
+#define I2C_ADDRESS 0x08
+#include <Wire.h>
+volatile uint8_t signalValue = 0;
+volatile bool newData = false;
+
+void receiveEvent(int numBytes) {
+  if (Wire.available()) {
+    signalValue = Wire.read();  // Read 1 byte: 0–255
+    newData = true;
+  }
+
+  // Clear any extra bytes
+  while (Wire.available()) {
+    Wire.read();
+  }
+}
 
 void setup() {
   Serial.begin(115200);
+
+  // ESP32 I2C:
+  // SDA = GPIO 21
+  // SCL = GPIO 22
+  Wire.begin(I2C_ADDRESS, 21, 22, 100000);
+
+  Wire.onReceive(receiveEvent);
 }
 
 void loop() {
 
-  // Read analog voltage
-  int adcValue = analogRead(SIGNAL_PIN);
+  if (newData) {
 
-  // Convert 0-4095 ADC range to 0-255
-  int signalValue = map(adcValue, 0, 4095, 0, 255);
+    noInterrupts();
+    uint8_t value = signalValue;
+    newData = false;
+    interrupts();
 
-  Serial.print("Signal value: ");
-  Serial.println(signalValue);
+    Serial.print("Signal value: ");
+    Serial.println(value);
+  }
 
   delay(10);
 }
