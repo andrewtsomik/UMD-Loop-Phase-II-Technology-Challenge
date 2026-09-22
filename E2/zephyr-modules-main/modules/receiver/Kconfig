@@ -1,0 +1,16 @@
+menuconfig RECEIVER
+    bool "Receiver module"
+    default y
+    help
+      Enable the external signal receiver module.
+
+if RECEIVER
+
+config RECEIVER_LOG_LEVEL
+    int "Receiver log level"
+    default 3
+    range 0 4
+    help
+      Log level for the receiver module.
+ 
+endif

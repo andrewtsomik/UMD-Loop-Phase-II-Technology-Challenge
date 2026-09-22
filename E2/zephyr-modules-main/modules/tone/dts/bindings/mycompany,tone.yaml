@@ -1,0 +1,8 @@
+description: Tone generator
+
+compatible: "mycompany,tone"
+
+properties:
+  pwms:
+    type: phandle-array
+    required: true

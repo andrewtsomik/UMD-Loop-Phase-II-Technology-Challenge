@@ -1,0 +1,15 @@
+menuconfig SERVO
+	bool "Servo driver"
+	default y
+	help
+	  Enable the custom ESP32 LEDC servo driver.
+
+if SERVO
+
+config SERVO_INIT_PRIORITY
+	int "Servo initialization priority"
+	default 90
+	help
+	  Initialization priority for the servo driver.
+
+endif

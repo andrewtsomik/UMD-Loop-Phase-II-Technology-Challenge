@@ -1,0 +1,95 @@
+#include <zephyr/dt-bindings/pinctrl/esp32-pinctrl.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
+
+/ {
+    hex_led: hex-led {
+        compatible = "mycompany,hex-led";
+        status = "okay";
+
+        close-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+        far-gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
+        exact-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+    };
+
+    servo: servo {
+        compatible = "mycompany,servo";
+        status = "okay";
+
+        /*
+         * LEDC channel 0
+         * 20,000,000 ns = 20 ms = 50 Hz
+         */
+        pwms = <&ledc0 0 20000000 PWM_POLARITY_NORMAL>;
+
+        min-pulse = <1000>;
+        max-pulse = <2000>;
+        min-angle = <0>;
+        max-angle = <180>;
+    };
+    tone: tone {
+        compatible = "mycompany,tone";
+        pwms = <&ledc0 1 125000 0>;
+        status = "okay";
+    };
+
+    receiver: receiver {
+        compatible = "mycompany,receiver";
+        status = "okay";
+	uart=<&uart2>;
+    };
+
+};
+
+&pinctrl {
+    ledc0_pins: ledc0_pins {
+        group1 {
+            pinmux = <LEDC_CH0_GPIO5>;
+            output-enable;
+        };
+        group2 {
+            pinmux = <LEDC_CH1_GPIO19>;   /* your buzzer pin */
+            output-enable;
+        };
+    };
+};
+
+&uart1 {
+    status = "okay";
+    current-speed = <115200>;
+};
+
+&pinctrl {
+    uart2_default: uart2_default {
+        group1 {
+            pinmux = <UART2_RX_GPIO16>;
+            bias-pull-up;
+        };
+    };
+};
+
+&uart2 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&uart2_default>;
+    pinctrl-names = "default";
+};
+
+
+&ledc0 {
+    pinctrl-0 = <&ledc0_pins>;
+    pinctrl-names = "default";
+    status = "okay";
+
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel0@0 {
+        reg = <0>;
+        timer = <0>;
+    };
+
+    channel1@1 {
+        reg = <1>;
+        timer = <1>;   /* separate from the servo's timer */
+    };
+};

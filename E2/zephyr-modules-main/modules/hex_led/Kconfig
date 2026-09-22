@@ -1,0 +1,3 @@
+menuconfig HEX_LED
+    bool "Hex LED driver"
+    default y

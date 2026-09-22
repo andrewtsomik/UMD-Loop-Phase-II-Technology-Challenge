@@ -1,0 +1,22 @@
+compatible: "mycompany,hex-led"
+
+description: Hex LED driver controlling three GPIO LEDs
+
+properties:
+  close-gpios:
+    type: phandle-array
+    required: true
+    description: GPIO controlling the close LED
+    specifier-space: gpio
+
+  far-gpios:
+    type: phandle-array
+    required: true
+    description: GPIO controlling the far LED
+    specifier-space: gpio
+
+  exact-gpios:
+    type: phandle-array
+    required: true
+    description: GPIO controlling the exact LED
+    specifier-space: gpio

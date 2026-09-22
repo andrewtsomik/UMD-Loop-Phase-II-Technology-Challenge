@@ -1,0 +1,8 @@
+description: "External UART signal receiver"
+
+compatible: "mycompany,receiver"
+
+properties:
+  uart:
+    type: phandle
+    required: true

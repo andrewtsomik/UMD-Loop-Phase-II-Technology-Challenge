@@ -1,0 +1,36 @@
+description: >
+  Generic RC servo controlled by a PWM signal.
+
+compatible: "mycompany,servo"
+
+include: base.yaml
+
+properties:
+  pwms:
+    type: phandle-array
+    required: true
+    description: PWM channel driving the servo signal line.
+
+  min-pulse:
+    type: int
+    default: 1000
+    description: >
+      Minimum servo pulse width in microseconds.
+
+  max-pulse:
+    type: int
+    default: 2000
+    description: >
+      Maximum servo pulse width in microseconds.
+
+  min-angle:
+    type: int
+    default: 0
+    description: >
+      Minimum servo angle.
+
+  max-angle:
+    type: int
+    default: 180
+    description: >
+      Maximum servo angle.
